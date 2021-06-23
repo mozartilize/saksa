@@ -3,9 +3,11 @@ import contextvars
 import socketio
 
 from .aio_consumer import AIOConsumer
+from .settings import Setting
 
 sio = socketio.AsyncServer(async_mode='asgi')
 app = socketio.ASGIApp(sio)
+settings = Setting("./.env")
 
 consumer_ctx = contextvars.ContextVar('consumer')
 
@@ -14,7 +16,13 @@ consumer_ctx = contextvars.ContextVar('consumer')
 async def connect(sid, environ, auth):
     print(f"{sid} connected with env={environ}; auth={auth}")
     await sio.save_session(sid, auth)
-    consumer_ctx.set(AIOConsumer({}))
+    consumner = AIOConsumer({
+        "bootstrap.servers": settings.kafka_bootstrap_servers,
+        "group.id": sid,
+        'auto.offset.reset': 'largest',
+    })
+    consumer_ctx.set(consumner)
+    consumner.subcribe(auth["topics"])
 
 
 @sio.event
