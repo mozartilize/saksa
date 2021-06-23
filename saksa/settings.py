@@ -8,5 +8,5 @@ class Setting:
         load_dotenv(env_path)
 
     @property
-    def kafka_bootstrap_servers():
-        return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or '127.0.0.1'
+    def kafka_bootstrap_servers(self):
+        return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or "127.0.0.1"

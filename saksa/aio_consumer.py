@@ -1,3 +1,5 @@
+import inspect
+
 import trio
 from confluent_kafka import Consumer
 
@@ -15,7 +17,9 @@ class AIOConsumer:
         self._consumer.subscribe(topics)
 
     async def _spawn_poll(self, send_to_trio, timeout):
-        await trio.to_thread.run_sync(self._poll, send_to_trio, timeout, cancellable=True)
+        await trio.to_thread.run_sync(
+            self._poll, send_to_trio, timeout, cancellable=True
+        )
 
     async def poll(self, timeout, nursery):
         send_to_trio, receive_from_thread = trio.open_memory_channel(0)
@@ -26,4 +30,29 @@ class AIOConsumer:
         return msg
 
     def close(self):
+        self._consumer.close()
+
+
+class ConsumerExecutor:
+    def __init__(self, consumer: AIOConsumer):
+        self._consumer = consumer
+        self._message_handlers = []
+        self._stopped = trio.Event()
+
+    def stop(self):
+        self._stopped.set()
+
+    def add_handler(self, handler):
+        self._message_handlers.append(handler)
+
+    async def run(self, nursery):
+        while not self._stopped.is_set():
+            msg = await self._consumer.poll(1.0, nursery)
+            if not msg:
+                continue
+            for handler in self._message_handlers:
+                if inspect.iscoroutinefunction(handler.process):
+                    nursery.start_soon(handler.process, msg)
+                else:
+                    handler.process(msg)
         self._consumer.close()
