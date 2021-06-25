@@ -7,13 +7,12 @@ from confluent_kafka import Consumer
 class AIOConsumer:
     def __init__(self, configs):
         self._consumer = Consumer(configs)
-        self._cancelled = False
 
     def _poll(self, send_to_trio, timeout):
         msg = self._consumer.poll(timeout)
         trio.from_thread.run(send_to_trio.send, msg)
 
-    def subscribe(self, topics):
+    async def subscribe(self, topics):
         self._consumer.subscribe(topics)
 
     async def _spawn_poll(self, send_to_trio, timeout):
@@ -29,12 +28,13 @@ class AIOConsumer:
         send_to_trio.close()
         return msg
 
-    def close(self):
-        self._consumer.close()
+    async def close(self):
+        await trio.to_thread.run_sync(self._consumer.close)
 
 
 class ConsumerExecutor:
-    def __init__(self, consumer: AIOConsumer):
+    def __init__(self, sid: str, consumer: AIOConsumer):
+        self._sid = sid
         self._consumer = consumer
         self._message_handlers = []
         self._stopped = trio.Event()
@@ -47,6 +47,7 @@ class ConsumerExecutor:
 
     async def run(self, nursery):
         while not self._stopped.is_set():
+            print(f"{self._sid} polling...")
             msg = await self._consumer.poll(1.0, nursery)
             if not msg:
                 continue
@@ -55,4 +56,4 @@ class ConsumerExecutor:
                     nursery.start_soon(handler.process, msg)
                 else:
                     handler.process(msg)
-        self._consumer.close()
+        await self._consumer.close()

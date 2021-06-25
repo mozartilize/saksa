@@ -1,16 +1,14 @@
-from contextvars import ContextVar
 import threading
 
 import socketio
 import trio
+import trio_asyncio
 
 from .aio_consumer import AIOConsumer, ConsumerExecutor
 from .settings import Setting
 
 sio = socketio.AsyncServer(async_mode="asgi")
 settings = Setting("./.env")
-
-consumer_ctx: ContextVar[ConsumerExecutor] = ContextVar("consumer")
 
 cin, cout = trio.open_memory_channel(100)
 
@@ -21,7 +19,7 @@ _TRIO_TOKEN = None
 
 
 def start_trio_loop():
-    t = threading.Thread(target=trio.run, args=(trio_main,))
+    t = threading.Thread(target=trio_asyncio.run, args=(trio_main,))
     t.start()
 
 
@@ -43,6 +41,15 @@ class PrintMessageHandler:
             print(msg.value())
 
 
+class EmitComsumedMessage:
+    def __init__(self, sio: socketio.AsyncServer, sid: str):
+        self._sio = sio
+        self._sid = sid
+
+    async def process(self, msg):
+        await trio_asyncio.aio_as_trio(self._sio.send)(msg.value(), room=self._sid)
+
+
 @sio.event
 async def connect(sid, environ, auth):
     c = AIOConsumer(
@@ -52,9 +59,11 @@ async def connect(sid, environ, auth):
             "auto.offset.reset": "largest",
         }
     )
-    c.subscribe(["mytopic"])
-    consumer_exec = ConsumerExecutor(c)
+    print(_TRIO_TOKEN)
+    await c.subscribe(["mytopic"])
+    consumer_exec = ConsumerExecutor(sid, c)
     consumer_exec.add_handler(PrintMessageHandler())
+    consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
     await sio.save_session(sid, {"consumer_exec": consumer_exec})
     trio.from_thread.run(cin.send, consumer_exec, trio_token=_TRIO_TOKEN)
 
