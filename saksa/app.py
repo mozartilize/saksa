@@ -50,6 +50,12 @@ class EmitComsumedMessage:
         await trio_asyncio.aio_as_trio(self._sio.send)(msg.value(), room=self._sid)
 
 
+class ErrorProcessor:
+    async def process(self, msg):
+        await trio.sleep(0.5)
+        raise Exception("error")
+
+
 @sio.event
 async def connect(sid, environ, auth):
     c = AIOConsumer(
@@ -59,11 +65,11 @@ async def connect(sid, environ, auth):
             "auto.offset.reset": "largest",
         }
     )
-    print(_TRIO_TOKEN)
-    await c.subscribe(["mytopic"])
+    trio.from_thread.run(c.subscribe, ["mytopic"], trio_token=_TRIO_TOKEN)
     consumer_exec = ConsumerExecutor(sid, c)
     consumer_exec.add_handler(PrintMessageHandler())
     consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
+    consumer_exec.add_handler(ErrorProcessor())
     await sio.save_session(sid, {"consumer_exec": consumer_exec})
     trio.from_thread.run(cin.send, consumer_exec, trio_token=_TRIO_TOKEN)
 

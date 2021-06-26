@@ -13,7 +13,7 @@ class AIOConsumer:
         trio.from_thread.run(send_to_trio.send, msg)
 
     async def subscribe(self, topics):
-        self._consumer.subscribe(topics)
+        await trio.to_thread.run_sync(self._consumer.subscribe, topics)
 
     async def _spawn_poll(self, send_to_trio, timeout):
         await trio.to_thread.run_sync(
@@ -51,9 +51,17 @@ class ConsumerExecutor:
             msg = await self._consumer.poll(1.0, nursery)
             if not msg:
                 continue
-            for handler in self._message_handlers:
-                if inspect.iscoroutinefunction(handler.process):
-                    nursery.start_soon(handler.process, msg)
-                else:
-                    handler.process(msg)
+            nursery.start_soon(self._process_message, msg)
         await self._consumer.close()
+
+    async def _process_message(self, msg):
+        try:
+            # open new nursery; if errors occur, it wont interrupt the main one
+            async with trio.open_nursery() as nursery:
+                for handler in self._message_handlers:
+                    if inspect.iscoroutinefunction(handler.process):
+                        nursery.start_soon(handler.process, msg)
+                    else:
+                        handler.process(msg)
+        except Exception as e:
+            print(e)
