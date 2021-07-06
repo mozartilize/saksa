@@ -1,6 +1,8 @@
 import threading
 
+import aioredis
 import socketio
+from socketio.exceptions import ConnectionRefusedError
 import trio
 import trio_asyncio
 
@@ -16,6 +18,8 @@ server_stop_event = trio.Event()
 server_stop_scope = trio.CancelScope()
 
 _TRIO_TOKEN = None
+
+redis = aioredis.from_url(settings.redis_url)
 
 
 def start_trio_loop():
@@ -56,8 +60,18 @@ class ErrorProcessor:
         raise Exception("error")
 
 
+def decode_auth_token(token) -> dict:
+    return {}
+
+
 @sio.event
 async def connect(sid, environ, auth):
+    if "token" not in auth:
+        raise ConnectionRefusedError("Unauthorize.")
+    ok = redis.delete(auth["token"])
+    if not ok:
+        raise ConnectionRefusedError("Unauthorize.")
+    decoded_token = decode_auth_token(auth["token"])
     c = AIOConsumer(
         {
             "bootstrap.servers": settings.kafka_bootstrap_servers,
@@ -65,11 +79,9 @@ async def connect(sid, environ, auth):
             "auto.offset.reset": "largest",
         }
     )
-    trio.from_thread.run(c.subscribe, ["mytopic"], trio_token=_TRIO_TOKEN)
+    trio.from_thread.run(c.subscribe, [decoded_token["uid"]], trio_token=_TRIO_TOKEN)
     consumer_exec = ConsumerExecutor(sid, c)
-    consumer_exec.add_handler(PrintMessageHandler())
     consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
-    consumer_exec.add_handler(ErrorProcessor())
     await sio.save_session(sid, {"consumer_exec": consumer_exec})
     trio.from_thread.run(cin.send, consumer_exec, trio_token=_TRIO_TOKEN)
 

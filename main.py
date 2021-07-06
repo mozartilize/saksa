@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
-import atexit
-
 import trio
 
 from saksa.aio_consumer import AIOConsumer
 
 
 async def main():
-    c = AIOConsumer({
-        'bootstrap.servers': '127.0.0.1',
-        'group.id': 'mygroup',
-        'auto.offset.reset': 'largest'
-    })
-    c.subscribe(['mytopic'])
+    c = AIOConsumer(
+        {
+            "bootstrap.servers": "127.0.0.1",
+            "group.id": "mygroup",
+            "auto.offset.reset": "largest",
+        }
+    )
+    c.subscribe(["mytopic"])
 
     def close_consumer(c):
         print("closing...")
@@ -29,11 +29,12 @@ async def main():
                     print("hmm")
                     continue
                 if msg.error():
-                    raise Exception('Message error')
+                    raise Exception("Message error")
                 print(msg.value())
             except KeyboardInterrupt:
                 close_consumer(c)
                 raise
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     trio.run(main)
