@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import trio
 
 from saksa.aio_consumer import AIOConsumer
@@ -18,8 +17,6 @@ async def main():
     def close_consumer(c):
         print("closing...")
         c.close()
-
-    # atexit.register(close_consumer, c)
 
     async with trio.open_nursery() as n:
         while True:

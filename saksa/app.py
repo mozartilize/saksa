@@ -1,10 +1,9 @@
-import threading
+import asyncio
 
 import aioredis
 import socketio
 from socketio.exceptions import ConnectionRefusedError
 import trio
-import trio_asyncio
 
 from .aio_consumer import AIOConsumer, ConsumerExecutor
 from .settings import Setting
@@ -12,24 +11,23 @@ from .settings import Setting
 sio = socketio.AsyncServer(async_mode="asgi")
 settings = Setting("./.env")
 
+redis = aioredis.from_url(settings.redis_url)
 cin, cout = trio.open_memory_channel(100)
 
 server_stop_event = trio.Event()
 server_stop_scope = trio.CancelScope()
 
-_TRIO_TOKEN = None
-
-redis = aioredis.from_url(settings.redis_url)
-
 
 def start_trio_loop():
-    t = threading.Thread(target=trio_asyncio.run, args=(trio_main,))
-    t.start()
+    loop = asyncio.get_event_loop()
+
+    trio.lowlevel.start_guest_run(
+        trio_main,
+        run_sync_soon_threadsafe=loop.call_soon_threadsafe,
+    )
 
 
 async def trio_main():
-    global _TRIO_TOKEN
-    _TRIO_TOKEN = trio.lowlevel.current_trio_token()
     with server_stop_scope:
         async with trio.open_nursery() as nursery:
             while not server_stop_event.is_set():
@@ -51,7 +49,7 @@ class EmitComsumedMessage:
         self._sid = sid
 
     async def process(self, msg):
-        await trio_asyncio.aio_as_trio(self._sio.send)(msg.value(), room=self._sid)
+        await self._sio.send(msg.value(), room=self._sid)
 
 
 class ErrorProcessor:
@@ -79,11 +77,11 @@ async def connect(sid, environ, auth):
             "auto.offset.reset": "largest",
         }
     )
-    trio.from_thread.run(c.subscribe, [decoded_token["uid"]], trio_token=_TRIO_TOKEN)
+    await c.subscribe([decoded_token["uid"]])
     consumer_exec = ConsumerExecutor(sid, c)
     consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
     await sio.save_session(sid, {"consumer_exec": consumer_exec})
-    trio.from_thread.run(cin.send, consumer_exec, trio_token=_TRIO_TOKEN)
+    await cin.send(consumer_exec)
 
 
 @sio.event
@@ -96,8 +94,8 @@ async def disconnect(sid):
 
 def on_app_stop():
     print("sending stop event to trio loop...")
-    trio.from_thread.run_sync(server_stop_event.set, trio_token=_TRIO_TOKEN)
-    trio.from_thread.run_sync(server_stop_scope.cancel, trio_token=_TRIO_TOKEN)
+    server_stop_event.set()
+    server_stop_scope.cancel()
 
 
 app = socketio.ASGIApp(sio, on_startup=start_trio_loop, on_shutdown=on_app_stop)
