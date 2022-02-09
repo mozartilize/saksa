@@ -8,22 +8,27 @@ import trio
 from .aio_consumer import AIOConsumer, ConsumerExecutor
 from .settings import Setting
 
-sio = socketio.AsyncServer(async_mode="asgi")
 settings = Setting("./.env")
 
-redis = aioredis.from_url(settings.redis_url)
-cin, cout = trio.open_memory_channel(100)
+sio = socketio.AsyncServer(async_mode="asgi", logger=True, engineio_logger=True)
 
+# redis = aioredis.from_url(settings.redis_url)
+
+cin: trio.MemorySendChannel
+cout: trio.MemoryReceiveChannel
+cin, cout = trio.open_memory_channel(100)
 server_stop_event = trio.Event()
 server_stop_scope = trio.CancelScope()
 
 
 def start_trio_loop():
-    loop = asyncio.get_event_loop()
-
+    loop = asyncio.get_running_loop()
     trio.lowlevel.start_guest_run(
         trio_main,
         run_sync_soon_threadsafe=loop.call_soon_threadsafe,
+        run_sync_soon_not_threadsafe=loop.call_soon,
+        done_callback=lambda _: print("trio_main done!"),
+        host_uses_signal_set_wakeup_fd=True,
     )
 
 
@@ -31,8 +36,26 @@ async def trio_main():
     with server_stop_scope:
         async with trio.open_nursery() as nursery:
             while not server_stop_event.is_set():
-                consumer = await cout.receive()
-                nursery.start_soon(consumer.run, nursery)
+                try:
+                    print("receiving...")
+                    sid = await cout.receive()
+                    print(f"received sid={sid}")
+                    c = AIOConsumer(
+                        {
+                            "bootstrap.servers": settings.kafka_bootstrap_servers,
+                            "group.id": sid,
+                            "auto.offset.reset": "largest",
+                        }
+                    )
+                    session_data = await sio.get_session(sid)
+                    await c.subscribe(session_data["topics"])
+                    consumer_exec = ConsumerExecutor(sid, c)
+                    consumer_exec.add_handler(PrintMessageHandler())
+                    session_data["consumer_exec"] = consumer_exec
+                    await sio.save_session(sid, session_data)
+                    nursery.start_soon(consumer_exec.run, nursery)
+                except Exception as e:
+                    print(e)
 
 
 class PrintMessageHandler:
@@ -64,24 +87,16 @@ def decode_auth_token(token) -> dict:
 
 @sio.event
 async def connect(sid, environ, auth):
-    if "token" not in auth:
-        raise ConnectionRefusedError("Unauthorize.")
-    ok = redis.delete(auth["token"])
-    if not ok:
-        raise ConnectionRefusedError("Unauthorize.")
-    decoded_token = decode_auth_token(auth["token"])
-    c = AIOConsumer(
-        {
-            "bootstrap.servers": settings.kafka_bootstrap_servers,
-            "group.id": sid,
-            "auto.offset.reset": "largest",
-        }
-    )
-    await c.subscribe([decoded_token["uid"]])
-    consumer_exec = ConsumerExecutor(sid, c)
-    consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
-    await sio.save_session(sid, {"consumer_exec": consumer_exec})
-    await cin.send(consumer_exec)
+    # if "token" not in auth:
+    #     raise ConnectionRefusedError("Unauthorize.")
+    # ok = redis.delete(auth["token"])
+    # if not ok:
+    #     raise ConnectionRefusedError("Unauthorize.")
+    # decoded_token = decode_auth_token(auth["token"])
+    topics = ["mytopic"]
+    await sio.save_session(sid, {"topics": topics})
+    cin.send_nowait(sid)
+    print("yay")
 
 
 @sio.event
