@@ -38,7 +38,8 @@ async def trio_main():
             while not server_stop_event.is_set():
                 try:
                     print("receiving...")
-                    sid = await cout.receive()
+                    ok_check: asyncio.Queue
+                    sid, ok_check = await cout.receive()
                     print(f"received sid={sid}")
                     c = AIOConsumer(
                         {
@@ -54,8 +55,10 @@ async def trio_main():
                     session_data["consumer_exec"] = consumer_exec
                     await sio.save_session(sid, session_data)
                     nursery.start_soon(consumer_exec.run, nursery)
+                    ok_check.put_nowait(True)
                 except Exception as e:
                     print(e)
+                    ok_check.put_nowait(e)
 
 
 class PrintMessageHandler:
@@ -95,8 +98,13 @@ async def connect(sid, environ, auth):
     # decoded_token = decode_auth_token(auth["token"])
     topics = ["mytopic"]
     await sio.save_session(sid, {"topics": topics})
-    cin.send_nowait(sid)
-    print("yay")
+    ok_check = asyncio.Queue(1)
+    cin.send_nowait((sid, ok_check))
+    ok = await ok_check.get()
+    if isinstance(ok, Exception):
+        raise ConnectionAbortedError()
+    elif not ok:
+        raise ConnectionRefusedError()
 
 
 @sio.event
