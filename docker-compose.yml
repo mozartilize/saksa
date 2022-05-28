@@ -24,7 +24,16 @@ services:
     volumes:
      - 'kafka-data:/bitnami/kafka'
 
+  scylladb:
+    image: scylladb/scylla
+    command: --developer-mode=1
+    ports:
+      - '9042:9042'
+    volumes:
+      - scylladb:/var/lib/scylla
+
 volumes:
   zookeeper-datalog:
   zookeeper-data:
   kafka-data:
+  scylladb:

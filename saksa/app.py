@@ -1,12 +1,15 @@
 import asyncio
+import pathlib
 
-import aioredis
 import socketio
 from socketio.exceptions import ConnectionRefusedError
 import trio
 
 from .aio_consumer import AIOConsumer, ConsumerExecutor
+from .api import api
 from .settings import Setting
+
+BASE_DIR = pathlib.Path(__file__).parent
 
 settings = Setting("./.env")
 
@@ -36,11 +39,11 @@ async def trio_main():
     with server_stop_scope:
         async with trio.open_nursery() as nursery:
             while not server_stop_event.is_set():
+                print("receiving...")
+                ok_check: asyncio.Queue
+                sid, ok_check = await cout.receive()
+                print(f"received sid={sid}")
                 try:
-                    print("receiving...")
-                    ok_check: asyncio.Queue
-                    sid, ok_check = await cout.receive()
-                    print(f"received sid={sid}")
                     c = AIOConsumer(
                         {
                             "bootstrap.servers": settings.kafka_bootstrap_servers,
@@ -121,4 +124,13 @@ def on_app_stop():
     server_stop_scope.cancel()
 
 
-app = socketio.ASGIApp(sio, on_startup=start_trio_loop, on_shutdown=on_app_stop)
+app = socketio.ASGIApp(
+    sio,
+    other_asgi_app=api,
+    on_startup=start_trio_loop,
+    on_shutdown=on_app_stop,
+    static_files={
+        "/": str(BASE_DIR.joinpath("index.html")),
+        "/static": str(BASE_DIR.joinpath("static")),
+    }
+)
