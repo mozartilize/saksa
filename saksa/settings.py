@@ -10,3 +10,7 @@ class Setting:
     @property
     def kafka_bootstrap_servers(self):
         return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or "127.0.0.1"
+
+    @property
+    def ENV(self):
+        return os.environ.get("SAKSA_ENV") or "production"

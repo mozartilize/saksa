@@ -20,7 +20,7 @@ def trio_to_asyncio(f):
         trio.lowlevel.start_guest_run(
             f,
             *args,
-            **kwargs,
+            *kwargs.values(),
             run_sync_soon_threadsafe=run_sync_soon_threadsafe,
             done_callback=done_callback,
         )

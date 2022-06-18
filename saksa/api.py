@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from starlette.routing import Route, Mount
 
-from .message_service import create_message
+from .message_service import create_message, get_messages_list
 from .settings import Setting
 
 cluster = Cluster(["127.0.0.1"], port=9042)
@@ -23,7 +23,7 @@ class AuthAPI(HTTPEndpoint):
         pass
 
 
-class UserAPI(HTTPEndpoint):
+class UsersAPI(HTTPEndpoint):
     async def post(self, request):
         form = await request.form()
         username = form['username']
@@ -43,7 +43,12 @@ class UserAPI(HTTPEndpoint):
             )
 
 
-class MessageAPI(HTTPEndpoint):
+class MessagesAPI(HTTPEndpoint):
+    async def get(self, request: Request):
+        messages = await get_messages_list(scylla, chat_id=request.query_params["chat_id"])
+        import pdb; pdb.set_trace()
+        return JSONResponse(messages.all())
+
     async def post(self, request: Request):
         form = await request.form()
         await create_message(scylla, form)
@@ -54,8 +59,8 @@ routes = [
     Mount(
         "/api/v1",
         routes=[
-            Route("/messages", endpoint=MessageAPI),
-            Route("/users", endpoint=UserAPI),
+            Route("/messages", endpoint=MessagesAPI),
+            Route("/users", endpoint=UsersAPI),
         ],
     )
 ]
