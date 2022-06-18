@@ -23,6 +23,7 @@ def trio_to_asyncio(f):
             *kwargs.values(),
             run_sync_soon_threadsafe=run_sync_soon_threadsafe,
             done_callback=done_callback,
+            host_uses_signal_set_wakeup_fd=True,
         )
 
         # Wait for the guest run to finish
