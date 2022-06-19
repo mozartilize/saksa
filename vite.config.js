@@ -1,3 +1,4 @@
+const { resolve } = require('path')
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -6,5 +7,11 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'saksa/static/',
+    rollupOptions: {
+      input: {
+        home: resolve(__dirname, 'index.html'),
+        auth: resolve(__dirname, 'templates/auth/index.html'),
+      },
+    },
   }
 })

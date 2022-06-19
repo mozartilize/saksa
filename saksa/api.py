@@ -9,6 +9,7 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.routing import Route, Mount
 
+from .auth.enpoints import AuthHtml
 from .message_service import create_message, get_messages_list
 from .response import OrjsonResponse
 from .settings import Setting
@@ -16,11 +17,6 @@ from .settings import Setting
 cluster = Cluster(["127.0.0.1"], port=9042)
 scylla = cluster.connect("saksa")
 settings = Setting("./.env")
-
-
-class AuthAPI(HTTPEndpoint):
-    async def post(self, request):
-        pass
 
 
 class UsersAPI(HTTPEndpoint):
@@ -64,6 +60,7 @@ routes = [
             Route("/messages", endpoint=MessagesAPI),
             Route("/users", endpoint=UsersAPI),
         ],
-    )
+    ),
+    Route('/login', endpoint=AuthHtml)
 ]
 api = Starlette(routes=routes)

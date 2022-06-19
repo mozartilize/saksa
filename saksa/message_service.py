@@ -1,9 +1,32 @@
 import uuid
 from datetime import datetime
 
+from cassandra import ConsistencyLevel
+from cassandra.query import BatchStatement
 from cassandra.util import max_uuid_from_time
 
 from .aio import async_
+
+
+@async_
+def create_chat(scylladb, members):
+    future = scylladb.execute_async(
+        "INSERT INTO chats_and_members(chat_id, members) VALUES (uuid(), %s)",
+        (
+            members,
+        ),
+    )
+    return future
+
+
+@async_
+def create_chats_by_users(scylladb, chat_id, members, latest_message, latest_message_sent_at):
+    insert_stmt = scylladb.prepare("INSERT INTO chats_by_user(username, chat_id, latest_message, latest_message_sent_at) VALUES (?, ?, ?, ?)")
+    batch = BatchStatement(consistency_level=ConsistencyLevel.QUORUM)
+
+    for username in members:
+        batch.add(insert_stmt, chat_id, username, latest_message, latest_message_sent_at)
+    return scylladb.execute_async(batch)
 
 
 @async_

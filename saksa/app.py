@@ -130,7 +130,7 @@ if settings.ENV == "development":
 
     def _get_static_file(path, static_files):
         if path == "/" or path.startswith("/frontend") or path.startswith("/@") or path.startswith("/node_modules"):
-            static_file_dict = {'filename': './index.html'}
+            static_file_dict = {'filename': settings.BASE_DIR.joinpath('../index.html')}
             static_file_dict["fe_path"] = path
             return static_file_dict
         return None
