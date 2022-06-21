@@ -26,6 +26,8 @@ services:
 
   scylladb:
     image: scylladb/scylla
+    environment:
+      - CQLSH_HOST=scylladb
     command: --developer-mode=1
     ports:
       - '9042:9042'
