@@ -1,25 +1,15 @@
-import { useEffect } from 'react';
+import { Fragment } from 'react';
 import { useSelector } from 'react-redux';
 
-import store from "./store";
-import { setMessages } from './features/chatbox';
 import MessageComponent from "./MessageComponent";
+import { useFetchMessagesQuery } from './api/messages'
 
 export default function MessagesComponent(props) {
   const selectingChatId = useSelector(state => state.selectingChatId.value);
 
-  useEffect(() => {
-    async function fetchMessages() {
-      const messagesResp = await fetch(`/api/v1/messages?chat_id=${selectingChatId}`);
-      store.dispatch(setMessages(await messagesResp.json()));
-    };
-    fetchMessages();
-    return () => {}
-  }, []);
-
-  const messages = useSelector(state => state.chatMessages.value);
-
+  const { data, error, isLoading } = useFetchMessagesQuery(selectingChatId);
+  console.log(data, error, isLoading);
   return (
-    messages.map(message => <MessageComponent key={message.created_at} message={message}/>)
+    isLoading ? <Fragment></Fragment> : data.map(message => <MessageComponent key={message.created_at} message={message}/>)
   )
 }
