@@ -1,13 +1,11 @@
-import uuid
-from datetime import datetime
-
 from cassandra.cluster import Cluster
-from cassandra.util import max_uuid_from_time
+from cassandra.util import unix_time_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.routing import Route, Mount
+from starlette.exceptions import HTTPException
 
 from .auth.enpoints import AuthHtml
 from .message_service import create_message, get_messages_list
@@ -44,11 +42,19 @@ class MessagesAPI(HTTPEndpoint):
         message_rows = await get_messages_list(scylla, chat_id=request.query_params["chat_id"])
         data = []
         for message_row in message_rows.all():
-            data.append(message_row._asdict())
+            message_dict = message_row._asdict()
+            message_dict['created_at'] = unix_time_from_uuid1(message_dict['created_at'])
+            data.append(message_dict)
         return OrjsonResponse(data)
 
     async def post(self, request: Request):
-        form = await request.form()
+        content_type = request.headers['content-type']
+        if "form" in content_type:
+            form = await request.form()
+        elif "json" in content_type:
+            form = await request.json()
+        else:
+            raise HTTPException(status_code=400)
         await create_message(scylla, form)
         return OrjsonResponse(None, status_code=201)
 

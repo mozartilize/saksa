@@ -1,17 +1,30 @@
 import { Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { setInputMsg, emptyInputMsg, pushMsg } from "./features/chatbox";
+import { setInputMsg, emptyInputMsg } from "./features/chatbox";
+import { useSendMessageMutation } from "./api/messages";
 
 export default function MessageInput(props) {
+  const dispatch = useDispatch();
+  const selectingChatId = useSelector(state => state.selectingChatId.value);
   const inputMessage = useSelector(state => state.inputMessage.value);
   const currentUser = useSelector(state => state.currentUser.value);
-  const dispatch = useDispatch()
+  const [sendMessage, { isLoading }] = useSendMessageMutation();
+
+  async function handleSendMessage() {
+    await sendMessage({
+      chat_id: selectingChatId,
+      sender: currentUser,
+      message: inputMessage,
+      created_at: (new Date()).getTime()
+    }).unwrap();
+    dispatch(emptyInputMsg());
+  }
 
   return (
     <Fragment>
       <textarea name="" id="" cols="30" rows="5" value={inputMessage} onChange={(event) => dispatch(setInputMsg(event.target.value))}></textarea>
-      <button onClick={() => { dispatch(pushMsg({sender: currentUser, message: inputMessage, created_at: (new Date()).getTime()}));  dispatch(emptyInputMsg())} }>Send</button>
+      <button onClick={handleSendMessage} disabled={isLoading}>Send</button>
     </Fragment>
   )
 }

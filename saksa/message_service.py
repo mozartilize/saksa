@@ -37,7 +37,7 @@ def create_message(scylladb, data):
             uuid.UUID(data["chat_id"]),
             data["sender"],
             data["message"],
-            max_uuid_from_time(datetime.utcnow()),
+            max_uuid_from_time(datetime.fromtimestamp(data["created_at"]/1000)) if data.get("created_at") else max_uuid_from_time(datetime.utcnow()),
         ),
     )
     return future
@@ -46,7 +46,7 @@ def create_message(scylladb, data):
 @async_
 def get_messages_list(scylladb, chat_id):
     future = scylladb.execute_async(
-        "SELECT * FROM messages WHERE chat_id = %s",
+        "SELECT * FROM messages WHERE chat_id = %s ORDER BY created_at",
         (
             uuid.UUID(chat_id),
         ),
