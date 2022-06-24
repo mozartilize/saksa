@@ -46,6 +46,17 @@ def async_(f):
     return wrapper
 
 
+def trio_async_(f):
+    @wraps(f)
+    async def wrapper(*args, **kwargs):
+        fut = f(*args, **kwargs)
+
+        result = await trio.to_thread.run_sync(fut.result)
+        return result
+
+    return wrapper
+
+
 import time
 from concurrent.futures import ThreadPoolExecutor
 

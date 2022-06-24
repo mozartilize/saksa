@@ -8,7 +8,7 @@ from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
 
 from .auth.enpoints import AuthHtml
-from .message_service import create_message, get_messages_list
+from .message_service import get_messages_list, handle_send_message
 from .response import OrjsonResponse
 from .settings import Setting
 
@@ -55,7 +55,7 @@ class MessagesAPI(HTTPEndpoint):
             form = await request.json()
         else:
             raise HTTPException(status_code=400)
-        await create_message(scylla, form)
+        await handle_send_message(scylla, form)
         return OrjsonResponse(None, status_code=201)
 
 

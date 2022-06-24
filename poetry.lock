@@ -538,6 +538,22 @@ outcome = "*"
 trio = ">=0.15.0"
 
 [[package]]
+name = "trio-typing"
+version = "0.7.0"
+description = "Static type checking support for Trio and related projects"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+mypy-extensions = ">=0.4.2"
+trio = ">=0.16.0"
+typing-extensions = ">=3.7.4"
+
+[package.extras]
+mypy = ["mypy (>=0.920)"]
+
+[[package]]
 name = "typing-extensions"
 version = "4.0.1"
 description = "Backported and Experimental Type Hints for Python 3.6+"
@@ -601,7 +617,7 @@ h11 = ">=0.9.0,<1"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "871c638ddb2cd932afa2c2fc30e6fddf6010d691d503e1855bae2148d0da1f8f"
+content-hash = "a1a7a49c4942cd199e58d76a86fdef0466ac0832aa1bde9817738ddf10733bf1"
 
 [metadata.files]
 aioredis = [
@@ -1005,6 +1021,10 @@ trio = [
 trio-asyncio = [
     {file = "trio_asyncio-0.12.0-py3-none-any.whl", hash = "sha256:9bf678f83204ba33c395783681c69af563a84145fad2110a152a81a4a18ae7e4"},
     {file = "trio_asyncio-0.12.0.tar.gz", hash = "sha256:824be23b0c678c0df942816cdb57b92a8b94f264fffa89f04626b0ba2d009768"},
+]
+trio-typing = [
+    {file = "trio-typing-0.7.0.tar.gz", hash = "sha256:5bb2184de144c15f2cc252bba4fd167125758df7339c4f7bc40538940aefa3b9"},
+    {file = "trio_typing-0.7.0-py3-none-any.whl", hash = "sha256:156ba760f444aa2f8af43f4459d462415fc297234feb27018e4e902bb62a122b"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.0.1-py3-none-any.whl", hash = "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"},
