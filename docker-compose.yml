@@ -3,6 +3,8 @@ version: "2.3"
 services:
   zookeeper:
     image: 'zookeeper:3.7'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
     restart: "always"
     volumes:
       - 'zookeeper-datalog:/datalog'
@@ -12,17 +14,38 @@ services:
     image: 'bitnami/kafka:latest'
     ports:
       - '9092:9092'
+      - '9093:9093'
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
     restart: "always"
     volumes:
      - 'kafka-data:/bitnami/kafka'
+
+  connect:
+    build: docker/connect
+    ports:
+      - 8083:8083
+    environment:
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my-connect-configs
+      - OFFSET_STORAGE_TOPIC=my-connect-offsets
+      - BOOTSTRAP_SERVERS=kafka:9092
+      - CONNECT__SCYLLA_NAME=scylladb
+    links:
+      - zookeeper:zookeeper
+      - kafka:kafka
+    depends_on:
+      - kafka
+    restart: "always"
 
   scylladb:
     image: scylladb/scylla
