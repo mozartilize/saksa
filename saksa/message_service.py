@@ -14,20 +14,24 @@ from .aio import async_, trio_to_asyncio, trio_async_
 def create_chat(scylladb, members):
     future = scylladb.execute_async(
         "INSERT INTO chats_and_members(chat_id, members) VALUES (uuid(), %s)",
-        (
-            members,
-        ),
+        (members,),
     )
     return future
 
 
 @async_
-def create_chats_by_users(scylladb, chat_id, members, latest_message, latest_message_sent_at):
-    insert_stmt = scylladb.prepare("INSERT INTO chats_by_user(username, chat_id, latest_message, latest_message_sent_at) VALUES (?, ?, ?, ?)")
+def create_chats_by_users(
+    scylladb, chat_id, members, latest_message, latest_message_sent_at
+):
+    insert_stmt = scylladb.prepare(
+        "INSERT INTO chats_by_user(username, chat_id, latest_message, latest_message_sent_at) VALUES (?, ?, ?, ?)"
+    )
     batch = BatchStatement(consistency_level=ConsistencyLevel.QUORUM)
 
     for username in members:
-        batch.add(insert_stmt, chat_id, username, latest_message, latest_message_sent_at)
+        batch.add(
+            insert_stmt, chat_id, username, latest_message, latest_message_sent_at
+        )
     return scylladb.execute_async(batch)
 
 
@@ -39,7 +43,9 @@ def create_message(scylladb, data):
             uuid.UUID(data["chat_id"]),
             data["sender"],
             data["message"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"]/1000)) if data.get("created_at") else max_uuid_from_time(datetime.utcnow()),
+            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            if data.get("created_at")
+            else max_uuid_from_time(datetime.utcnow()),
         ),
     )
     return future
@@ -51,7 +57,9 @@ def create_users_latest_chat(scylladb, data):
         "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, latest_message) VALUES (%s, %s, %s, %s)",
         (
             data["username"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"]/1000)) if data.get("created_at") else max_uuid_from_time(datetime.utcnow()),
+            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            if data.get("created_at")
+            else max_uuid_from_time(datetime.utcnow()),
             uuid.UUID(data["chat_id"]),
             data["message"],
         ),
@@ -66,7 +74,9 @@ def delete_users_latest_chat(scylladb, data):
         (
             uuid.UUID(data["chat_id"]),
             data["username"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"]/1000)) if data.get("created_at") else max_uuid_from_time(datetime.utcnow()),
+            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            if data.get("created_at")
+            else max_uuid_from_time(datetime.utcnow()),
         ),
     )
     return future
@@ -76,9 +86,7 @@ def delete_users_latest_chat(scylladb, data):
 def get_messages_list(scylladb, chat_id):
     future = scylladb.execute_async(
         "SELECT * FROM messages WHERE chat_id = %s ORDER BY created_at",
-        (
-            uuid.UUID(chat_id),
-        ),
+        (uuid.UUID(chat_id),),
     )
     return future
 
@@ -87,9 +95,7 @@ def get_messages_list(scylladb, chat_id):
 def get_chat_members(scylladb, chat_id):
     future = scylladb.execute_async(
         "SELECT members FROM chat_members WHERE chat_id = %s",
-        (
-            uuid.UUID(chat_id),
-        ),
+        (uuid.UUID(chat_id),),
     )
     return future
 

@@ -14,7 +14,9 @@ class AuthAPI(HTTPEndpoint):
 class AuthHtml(HTTPEndpoint):
     async def get(self, request: Request):
         templates = Jinja2Templates(directory=settings.TEMPLATE_DIR)
-        return templates.TemplateResponse('auth/index.html', context={"request": request})
+        return templates.TemplateResponse(
+            "auth/index.html", context={"request": request}
+        )
 
     async def post(self, request: Request):
         form = await request.form()

@@ -8,7 +8,6 @@ offset = int(sys.argv[2])
 p = Producer({"bootstrap.servers": "127.0.0.1"})
 
 
-
 def delivery_report(err, msg):
     """Called once for each message produced to indicate delivery result.
     Triggered by poll() or flush()."""

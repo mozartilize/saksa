@@ -19,14 +19,18 @@ scylla = cluster.connect("saksa")
 class UsersAPI(HTTPEndpoint):
     async def post(self, request):
         form = await request.form()
-        username = form['username']
+        username = form["username"]
         future = scylla.execute_async(
             "INSERT INTO users(username) VALUES (%s) IF NOT EXISTS", (form["username"],)
         )
         result = future.result().one()
         if result.applied:
-            kafka_client = AdminClient({"bootstrap.servers": settings.kafka_bootstrap_servers})
-            fs = kafka_client.create_topics([NewTopic(username, num_partitions=1, replication_factor=1)])
+            kafka_client = AdminClient(
+                {"bootstrap.servers": settings.kafka_bootstrap_servers}
+            )
+            fs = kafka_client.create_topics(
+                [NewTopic(username, num_partitions=1, replication_factor=1)]
+            )
             for _, f in fs.items():
                 f.result()
             return OrjsonResponse(None, status_code=201)
@@ -38,16 +42,20 @@ class UsersAPI(HTTPEndpoint):
 
 class MessagesAPI(HTTPEndpoint):
     async def get(self, request: Request):
-        message_rows = await get_messages_list(scylla, chat_id=request.query_params["chat_id"])
+        message_rows = await get_messages_list(
+            scylla, chat_id=request.query_params["chat_id"]
+        )
         data = []
         for message_row in message_rows.all():
             message_dict = message_row._asdict()
-            message_dict['created_at'] = unix_time_from_uuid1(message_dict['created_at'])
+            message_dict["created_at"] = unix_time_from_uuid1(
+                message_dict["created_at"]
+            )
             data.append(message_dict)
         return OrjsonResponse(data)
 
     async def post(self, request: Request):
-        content_type = request.headers['content-type']
+        content_type = request.headers["content-type"]
         if "form" in content_type:
             form = await request.form()
         elif "json" in content_type:
@@ -66,6 +74,6 @@ routes = [
             Route("/users", endpoint=UsersAPI),
         ],
     ),
-    Route('/login', endpoint=AuthHtml)
+    Route("/login", endpoint=AuthHtml),
 ]
 api = Starlette(routes=routes)
