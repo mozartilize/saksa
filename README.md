@@ -13,7 +13,8 @@ Otherwise, use `development` which proxies requests from front-end server.
 ```
 KAFKA_BOOTSTRAP_SERVERS
 ```
-Required: `SAKSA_ENV` is `production`.
+Required if `SAKSA_ENV` is `production`.
+
 Default: `127.0.0.1`, for development only.
 
 ```
@@ -37,7 +38,7 @@ $ yarn dev
 2. Start back-end
 
 ```
-$ uvicorn saksa:app --log-level=debug --reload
+$ uvicorn --factory saksa:create_app --log-level=debug --reload
 ```
 
 3. Access to the application on `http://localhost:8000`

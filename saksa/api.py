@@ -10,11 +10,10 @@ from starlette.exceptions import HTTPException
 from .auth.enpoints import AuthHtml
 from .message_service import get_messages_list, handle_send_message
 from .response import OrjsonResponse
-from .settings import Setting
+from .settings import settings
 
 cluster = Cluster(["127.0.0.1"], port=9042)
 scylla = cluster.connect("saksa")
-settings = Setting("./.env")
 
 
 class UsersAPI(HTTPEndpoint):

@@ -39,13 +39,14 @@ services:
       - CONFIG_STORAGE_TOPIC=my-connect-configs
       - OFFSET_STORAGE_TOPIC=my-connect-offsets
       - BOOTSTRAP_SERVERS=kafka:9092
-      - CONNECT__SCYLLA_NAME=scylladb
     links:
       - zookeeper:zookeeper
       - kafka:kafka
     depends_on:
       - kafka
     restart: "always"
+    volumes:
+      - connect-data:/kafka/data
 
   scylladb:
     image: scylladb/scylla
@@ -61,4 +62,5 @@ volumes:
   zookeeper-datalog:
   zookeeper-data:
   kafka-data:
+  connect-data:
   scylladb:

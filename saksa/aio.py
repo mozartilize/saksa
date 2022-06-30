@@ -14,6 +14,7 @@ def trio_to_asyncio(f):
 
         # Revised 'done' callback: set a Future
         done_fut = asyncio_loop.create_future()
+
         def done_callback(trio_main_outcome):
             done_fut.set_result(trio_main_outcome)
 
@@ -59,6 +60,7 @@ def trio_async_(f):
 
 import time
 from concurrent.futures import ThreadPoolExecutor
+
 
 @async_
 def foo():

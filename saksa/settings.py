@@ -10,7 +10,7 @@ class Setting:
 
     @property
     def kafka_bootstrap_servers(self):
-        return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or "127.0.0.1"
+        return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or "localhost:9093"
 
     @property
     def ENV(self):
@@ -31,7 +31,11 @@ class Setting:
 
     @property
     def TEMPLATE_DIR(self):
-        return self.BASE_DIR.joinpath("static/templates") if self.IS_PROD else self.BASE_DIR.joinpath("../templates")
+        return (
+            self.BASE_DIR.joinpath("static/templates")
+            if self.IS_PROD
+            else self.BASE_DIR.joinpath("../templates")
+        )
 
 
 settings = Setting("./.env")
