@@ -1,5 +1,6 @@
 import asyncio
 
+import anyio
 import socketio
 import trio
 
@@ -10,42 +11,30 @@ from .settings import settings
 from .sio import create_sio
 
 
-def start_consume_user_events(sio, server_stop_scope, server_stop_event, cout):
-    loop = asyncio.get_running_loop()
-
-    async def consume_user_events_loop():
-        print("start consume_user_events_loop")
-        with server_stop_scope:
-            async with trio.open_nursery() as nursery:
-                while not server_stop_event.is_set():
-                    print("receiving...")
-                    sid = await cout.receive()
-                    print(f"received sid={sid}")
-                    try:
-                        c = AIOConsumer(
-                            {
-                                "bootstrap.servers": settings.kafka_bootstrap_servers,
-                                "group.id": sid,
-                                "auto.offset.reset": "largest",
-                            }
-                        )
-                        session_data = await sio.get_session(sid)
-                        await c.subscribe(session_data["topics"])
-                        consumer_exec = ConsumerExecutor(sid, c)
-                        consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
-                        session_data["consumer_exec"] = consumer_exec
-                        await sio.save_session(sid, session_data)
-                        nursery.start_soon(consumer_exec.run, nursery)
-                    except Exception as e:
-                        print(e)
-
-    trio.lowlevel.start_guest_run(
-        consume_user_events_loop,
-        run_sync_soon_threadsafe=loop.call_soon_threadsafe,  # type: ignore
-        run_sync_soon_not_threadsafe=loop.call_soon,  # type: ignore
-        done_callback=lambda _: print("trio_main done!"),
-        host_uses_signal_set_wakeup_fd=True,
-    )
+async def consume_user_events_loop(sio, cout):
+    print("start consume_user_events_loop")
+    async with anyio.create_task_group() as nursery:
+        while 1:
+            print("receiving...")
+            sid = await cout.receive()
+            print(f"received sid={sid}")
+            try:
+                c = AIOConsumer(
+                    {
+                        "bootstrap.servers": settings.kafka_bootstrap_servers,
+                        "group.id": sid,
+                        "auto.offset.reset": "largest",
+                    }
+                )
+                session_data = await sio.get_session(sid)
+                await c.subscribe(session_data["topics"])
+                consumer_exec = ConsumerExecutor(sid, c)
+                consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
+                session_data["consumer_exec"] = consumer_exec
+                await sio.save_session(sid, session_data)
+                nursery.start_soon(consumer_exec.run, nursery)
+            except Exception as e:
+                print(e)
 
 
 httpx_client = None
@@ -103,14 +92,12 @@ class ASGIApp(socketio.ASGIApp):
 
 
 def create_app():
-    cin: trio.MemorySendChannel
-    cout: trio.MemoryReceiveChannel
-    cin, cout = trio.open_memory_channel(1000)
-    server_stop_event = trio.Event()
-    server_stop_scope = trio.CancelScope()
+    cin, cout = anyio.create_memory_object_stream(1000)
+    server_stop_event = anyio.Event()
+    server_stop_scope = anyio.CancelScope()
 
-    def on_startup():
-        start_consume_user_events(sio, server_stop_scope, server_stop_event, cout)
+    async def on_startup():
+        asyncio.create_task(consume_user_events_loop(sio, cout))
 
     def on_shutdown():
         print("sending stop event to trio loop...")

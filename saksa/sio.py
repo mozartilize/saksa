@@ -1,13 +1,12 @@
 import socketio
-import trio
 
 
 class IndexNamespace(socketio.AsyncNamespace):
     def __init__(
         self,
         namespace: str,
-        cin: trio.MemorySendChannel,
-        cout: trio.MemoryReceiveChannel,
+        cin,
+        cout,
     ) -> None:
         super().__init__(namespace)
         self.cin = cin
@@ -16,13 +15,12 @@ class IndexNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ, auth):
         topics = [auth["username"]]
         await self.save_session(sid, {"topics": topics})
-        self.cin.send_nowait(sid)
+        await self.cin.send(sid)
 
     async def on_disconnect(self, sid):
         session_data = await self.get_session(sid)
         consumer_exec = session_data.get("consumer_exec")
-        if consumer_exec:
-            consumer_exec.stop()
+        consumer_exec.stop()
 
     async def on_my_event(self, sid, data):
         await self.emit("my_response", data)

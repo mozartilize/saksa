@@ -1,4 +1,4 @@
-import trio
+import anyio
 import socketio
 
 
@@ -21,5 +21,5 @@ class EmitComsumedMessage:
 
 class ErrorProcessor:
     async def process(self, msg):
-        await trio.sleep(0.5)
+        await anyio.sleep(0.5)
         raise Exception("error")

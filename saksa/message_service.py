@@ -1,13 +1,13 @@
 import uuid
 from datetime import datetime
 
-import trio
+import anyio
 from cassandra import ConsistencyLevel
 from cassandra.cluster import ResultSet
 from cassandra.query import BatchStatement
 from cassandra.util import max_uuid_from_time
 
-from .aio import async_, trio_to_asyncio, trio_async_
+from .aio import async_
 
 
 @async_
@@ -35,7 +35,7 @@ def create_chats_by_users(
     return scylladb.execute_async(batch)
 
 
-@trio_async_
+@async_
 def create_message(scylladb, data):
     future = scylladb.execute_async(
         "INSERT INTO messages(chat_id, sender, message, created_at) VALUES (%s, %s, %s, %s)",
@@ -51,7 +51,7 @@ def create_message(scylladb, data):
     return future
 
 
-@trio_async_
+@async_
 def create_users_latest_chat(scylladb, data):
     future = scylladb.execute_async(
         "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, latest_message) VALUES (%s, %s, %s, %s)",
@@ -67,7 +67,7 @@ def create_users_latest_chat(scylladb, data):
     return future
 
 
-@trio_async_
+@async_
 def delete_users_latest_chat(scylladb, data):
     future = scylladb.execute_async(
         "DELETE FROM chats_by_user WHERE chat_id=%s AND username=%s AND latest_message_sent_at < %s",
@@ -91,7 +91,7 @@ def get_messages_list(scylladb, chat_id):
     return future
 
 
-@trio_async_
+@async_
 def get_chat_members(scylladb, chat_id):
     future = scylladb.execute_async(
         "SELECT members FROM chat_members WHERE chat_id = %s",
@@ -100,11 +100,10 @@ def get_chat_members(scylladb, chat_id):
     return future
 
 
-@trio_to_asyncio
 async def handle_send_message(scylladb, data):
     # TODO: use batch query
     members_result: ResultSet = await get_chat_members(scylladb, data["chat_id"])
-    async with trio.open_nursery() as nursery:
+    async with anyio.create_task_group() as nursery:
         nursery.start_soon(create_message, scylladb, data)
         members = members_result.one()[0]
         for member in members:
