@@ -54,14 +54,21 @@ class ConsumerExecutor:
             nursery.start_soon(self._process_message, msg)
         await self._consumer.close()
 
+    async def run_v2(self):
+        async with anyio.create_task_group() as nursery:
+            while not self._stopped.is_set():
+                print(f"{self._sid} polling...")
+                msg = await self._consumer.poll(1.0, nursery)
+                if not msg:
+                    continue
+                nursery.start_soon(self._process_message, msg)
+            await self._consumer.close()
+
     async def _process_message(self, msg):
-        try:
-            # open new nursery; if errors occur, it wont interrupt the main one
-            async with anyio.create_task_group() as nursery:
-                for handler in self._message_handlers:
-                    if inspect.iscoroutinefunction(handler.process):
-                        nursery.start_soon(handler.process, msg)
-                    else:
-                        handler.process(msg)
-        except Exception as e:
-            print(e)
+        # open new nursery; if errors occur, it wont interrupt the main one
+        async with anyio.create_task_group() as nursery:
+            for handler in self._message_handlers:
+                if inspect.iscoroutinefunction(handler.process):
+                    nursery.start_soon(handler.process, msg)
+                else:
+                    handler.process(msg)

@@ -1,40 +1,13 @@
-import asyncio
+import logging
 
 import anyio
 import socketio
-import trio
 
-from .aio_consumer import AIOConsumer, ConsumerExecutor
 from .api import api
-from .processors import EmitComsumedMessage
 from .settings import settings
 from .sio import create_sio
 
-
-async def consume_user_events_loop(sio, cout):
-    print("start consume_user_events_loop")
-    async with anyio.create_task_group() as nursery:
-        while 1:
-            print("receiving...")
-            sid = await cout.receive()
-            print(f"received sid={sid}")
-            try:
-                c = AIOConsumer(
-                    {
-                        "bootstrap.servers": settings.kafka_bootstrap_servers,
-                        "group.id": sid,
-                        "auto.offset.reset": "largest",
-                    }
-                )
-                session_data = await sio.get_session(sid)
-                await c.subscribe(session_data["topics"])
-                consumer_exec = ConsumerExecutor(sid, c)
-                consumer_exec.add_handler(EmitComsumedMessage(sio, sid))
-                session_data["consumer_exec"] = consumer_exec
-                await sio.save_session(sid, session_data)
-                nursery.start_soon(consumer_exec.run, nursery)
-            except Exception as e:
-                print(e)
+logger = logging.getLogger(__name__)
 
 
 httpx_client = None
@@ -92,24 +65,10 @@ class ASGIApp(socketio.ASGIApp):
 
 
 def create_app():
-    cin, cout = anyio.create_memory_object_stream(1000)
-    server_stop_event = anyio.Event()
-    server_stop_scope = anyio.CancelScope()
-
-    async def on_startup():
-        asyncio.create_task(consume_user_events_loop(sio, cout))
-
-    def on_shutdown():
-        print("sending stop event to trio loop...")
-        server_stop_event.set()
-        server_stop_scope.cancel()
-
-    sio = create_sio(cin, cout)
+    sio = create_sio()
     app = ASGIApp(
         sio,
         other_asgi_app=api,
-        on_startup=on_startup,
-        on_shutdown=on_shutdown,
         static_files={
             "/": str(settings.BASE_DIR.joinpath("static/index.html")),
             "/assets": str(settings.BASE_DIR.joinpath("static/assets")),
