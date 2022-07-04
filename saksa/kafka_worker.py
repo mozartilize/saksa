@@ -10,7 +10,7 @@ app = faust.App('saksa', broker=f'kafka://{settings.kafka_bootstrap_servers}', s
 
 topic = app.topic('scylladb.saksa.messages')
 
-scyladb = ScyllaDB(settings.SCYLLADB_SERVER)
+scylladb = ScyllaDB(settings.SCYLLADB_SERVER)
 
 
 async def _send_to_user_topic(topic, value):
@@ -19,7 +19,7 @@ async def _send_to_user_topic(topic, value):
 
 @app.agent(topic)
 async def forward_message_to_user_topic(stream):
-    with scyladb.make_session("saksa") as scylla_session:
+    with scylladb.make_session("saksa") as scylla_session:
         async for value in stream:
             chat_id = value['payload']['after']['chat_id']
             members_result = await get_chat_members(scylla_session, chat_id)
