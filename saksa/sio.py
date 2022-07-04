@@ -8,13 +8,6 @@ from .user_event_service import consume_user_events
 logger = logging.getLogger(__name__)
 
 
-def handle_consume_events_done(done_fut: asyncio.Future, result_fut: asyncio.Future):
-    try:
-        done_fut.set_result(result_fut.result())
-    except Exception as e:
-        done_fut.set_exception(e)
-
-
 class IndexNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ, auth):
         task, consumer_exec = await consume_user_events(self, sid, auth["username"])

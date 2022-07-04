@@ -37,5 +37,9 @@ class Setting:
             else self.BASE_DIR.joinpath("../templates")
         )
 
+    @property
+    def SCYLLADB_SERVER(self):
+        return os.environ.get("SCYLLADB_SERVER") or "localhost"
+
 
 settings = Setting("./.env")

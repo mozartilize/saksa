@@ -22,9 +22,9 @@ scylla-driver = "^3.25.4"
 python-multipart = "^0.0.5"
 Jinja2 = "^3.1.2"
 anyio = "^3.6.1"
+faust-streaming = {extras = ["rocksdb"], version = "^0.8.5"}
 
 [tool.poetry.dev-dependencies]
-black = "^22.3.0"
 flake8 = "^3.9.2"
 httpx = "^0.23.0"
 
