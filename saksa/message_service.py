@@ -5,7 +5,7 @@ import anyio
 from cassandra import ConsistencyLevel
 from cassandra.cluster import ResultSet
 from cassandra.query import BatchStatement
-from cassandra.util import max_uuid_from_time
+from cassandra.util import uuid_from_time
 
 from .aio import async_
 
@@ -43,9 +43,9 @@ def create_message(scylladb, data):
             uuid.UUID(data["chat_id"]),
             data["sender"],
             data["message"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
             if data.get("created_at")
-            else max_uuid_from_time(datetime.utcnow()),
+            else uuid_from_time(datetime.utcnow()),
         ),
     )
     return future
@@ -57,9 +57,9 @@ def create_users_latest_chat(scylladb, data):
         "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, latest_message) VALUES (%s, %s, %s, %s)",
         (
             data["username"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
             if data.get("created_at")
-            else max_uuid_from_time(datetime.utcnow()),
+            else uuid_from_time(datetime.utcnow()),
             uuid.UUID(data["chat_id"]),
             data["message"],
         ),
@@ -74,9 +74,9 @@ def delete_users_latest_chat(scylladb, data):
         (
             uuid.UUID(data["chat_id"]),
             data["username"],
-            max_uuid_from_time(datetime.fromtimestamp(data["created_at"] / 1000))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
             if data.get("created_at")
-            else max_uuid_from_time(datetime.utcnow()),
+            else uuid_from_time(datetime.utcnow()),
         ),
     )
     return future

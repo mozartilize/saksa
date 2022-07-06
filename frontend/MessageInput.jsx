@@ -16,7 +16,7 @@ export default function MessageInput(props) {
       chat_id: selectingChatId,
       sender: currentUser,
       message: inputMessage,
-      created_at: (new Date()).getTime()
+      created_at: new Date().getTime() / 1000,
     }).unwrap();
     dispatch(emptyInputMsg());
   }

@@ -10,5 +10,7 @@
   "value.converter.schemas.enable": true,
   "auto.create.topics.enable": true,
   "scylla.query.time.window.size": 300,
-  "scylla.confidence.window.size": 300
+  "scylla.confidence.window.size": 300,
+  "errors.log.enable": true,
+  "errors.retry.timeout": -1
 }

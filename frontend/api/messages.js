@@ -37,9 +37,14 @@ export const messagesApi = createApi({
           });
           ws.on("message", (data) => {
             const buffer = new Uint8Array(data);
-            const fileString= String.fromCharCode.apply(null, buffer);
-            console.log(fileString);
-            // const message = JSON.parse(fileString);
+            const fileString= new TextDecoder().decode(buffer);
+            const message = JSON.parse(fileString);
+            console.log(message);
+            updateCachedData((draft) => {
+              if (draft[draft.length-1].created_at != message.created_at-25200) {
+                draft.push(message);
+              }
+            })
           });
         } catch {
           // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,

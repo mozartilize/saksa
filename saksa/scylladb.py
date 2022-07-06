@@ -15,5 +15,5 @@ class ScyllaDB:
     def make_session(self, keyspace):
         self._session = self.cluster.connect(keyspace)
         yield self._session
-        self._session.close()
+        self._session.shutdown()
         self._session = None
