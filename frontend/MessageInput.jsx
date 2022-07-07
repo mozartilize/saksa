@@ -14,9 +14,9 @@ export default function MessageInput(props) {
   async function handleSendMessage() {
     await sendMessage({
       chat_id: selectingChatId,
-      sender: currentUser,
+      created_at: new Date().getTime() / 1000 + new Date().getTimezoneOffset() * 60,
       message: inputMessage,
-      created_at: new Date().getTime() / 1000,
+      sender: currentUser,
     }).unwrap();
     dispatch(emptyInputMsg());
   }

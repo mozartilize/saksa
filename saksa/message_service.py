@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 import anyio
 from cassandra import ConsistencyLevel
@@ -43,7 +43,7 @@ def create_message(scylladb, data):
             uuid.UUID(data["chat_id"]),
             data["sender"],
             data["message"],
-            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc))
             if data.get("created_at")
             else uuid_from_time(datetime.utcnow()),
         ),
@@ -57,7 +57,7 @@ def create_users_latest_chat(scylladb, data):
         "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, latest_message) VALUES (%s, %s, %s, %s)",
         (
             data["username"],
-            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc))
             if data.get("created_at")
             else uuid_from_time(datetime.utcnow()),
             uuid.UUID(data["chat_id"]),
@@ -74,7 +74,7 @@ def delete_users_latest_chat(scylladb, data):
         (
             uuid.UUID(data["chat_id"]),
             data["username"],
-            uuid_from_time(datetime.fromtimestamp(data["created_at"]))
+            uuid_from_time(datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc))
             if data.get("created_at")
             else uuid_from_time(datetime.utcnow()),
         ),

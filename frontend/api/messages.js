@@ -41,7 +41,7 @@ export const messagesApi = createApi({
             const message = JSON.parse(fileString);
             console.log(message);
             updateCachedData((draft) => {
-              if (draft[draft.length-1].created_at != message.created_at-25200) {
+              if (draft[draft.length-1].created_at != message.created_at) {
                 draft.push(message);
               }
             })

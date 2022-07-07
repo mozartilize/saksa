@@ -2,7 +2,7 @@ from uuid import UUID
 
 import anyio
 import faust
-from cassandra.util import unix_time_from_uuid1
+from cassandra.util import datetime_from_uuid1
 
 from saksa.scylladb import ScyllaDB
 from saksa.settings import settings
@@ -30,7 +30,7 @@ async def forward_message_to_user_topic(stream):
             members = members_result.one()[0]
             message = {
                 "chat_id": message_log['chat_id'],
-                "created_at": unix_time_from_uuid1(UUID(message_log['created_at'])),
+                "created_at": datetime_from_uuid1(UUID(message_log['created_at'])).timestamp(),
                 "message": message_log['message']['value'],
                 "sender": message_log['sender']['value'],
             }

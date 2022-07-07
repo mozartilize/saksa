@@ -57,6 +57,11 @@ services:
       - '9042:9042'
     volumes:
       - scylladb:/var/lib/scylla
+    healthcheck:
+      test: ["CMD", "cqlsh", "-k", "saksa"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
 
 volumes:
   zookeeper-datalog:

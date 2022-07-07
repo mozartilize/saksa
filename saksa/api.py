@@ -1,5 +1,5 @@
 from cassandra.cluster import Cluster
-from cassandra.util import unix_time_from_uuid1
+from cassandra.util import datetime_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
@@ -48,9 +48,9 @@ class MessagesAPI(HTTPEndpoint):
         data = []
         for message_row in message_rows.all():
             message_dict = message_row._asdict()
-            message_dict["created_at"] = unix_time_from_uuid1(
+            message_dict["created_at"] = datetime_from_uuid1(
                 message_dict["created_at"]
-            )
+            ).timestamp()
             data.append(message_dict)
         return OrjsonResponse(data)
 
@@ -64,6 +64,11 @@ class MessagesAPI(HTTPEndpoint):
             raise HTTPException(status_code=400)
         await handle_send_message(scylla, form)
         return OrjsonResponse(None, status_code=201)
+
+
+class ChatAPI(HTTPEndpoint):
+    async def get(self, request: Request):
+        pass
 
 
 routes = [
