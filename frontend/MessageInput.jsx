@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { setInputMsg, emptyInputMsg } from "./features/chatbox";
 import { useSendMessageMutation } from "./api/messages";
+import { triggerNewMessageEvent } from "./features/chatlist";
 
 export default function MessageInput(props) {
   const dispatch = useDispatch();
@@ -12,18 +13,27 @@ export default function MessageInput(props) {
   const [sendMessage, { isLoading }] = useSendMessageMutation();
 
   async function handleSendMessage() {
-    await sendMessage({
+    const msg = {
       chat_id: selectingChatId,
       created_at: new Date().getTime() / 1000 + new Date().getTimezoneOffset() * 60,
       message: inputMessage,
       sender: currentUser,
-    }).unwrap();
+    };
+    await sendMessage(msg).unwrap();
     dispatch(emptyInputMsg());
+    dispatch(triggerNewMessageEvent(msg.created_at));
+  }
+
+  function onEnterPress(e) {
+    if(e.keyCode == 13 && e.shiftKey == false) {
+      handleSendMessage();
+      e.preventDefault();
+    }
   }
 
   return (
     <Fragment>
-      <textarea name="" id="" cols="30" rows="5" value={inputMessage} onChange={(event) => dispatch(setInputMsg(event.target.value))}></textarea>
+      <textarea name="" id="" cols="30" rows="5" value={inputMessage} onChange={(event) => dispatch(setInputMsg(event.target.value))} onKeyDown={onEnterPress}></textarea>
       <button onClick={handleSendMessage} disabled={isLoading}>Send</button>
     </Fragment>
   )

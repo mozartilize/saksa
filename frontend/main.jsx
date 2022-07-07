@@ -8,15 +8,16 @@ import MessageInput from './MessageInput';
 
 import './index.css'
 
-const messegesEl = ReactDOM.createRoot(document.getElementById('messages'));
-messegesEl.render(
+const messegesEl = document.getElementById('messages');
+const messagesNode = ReactDOM.createRoot(messegesEl);
+messagesNode.render(
   <Provider store={store}>
-    <MessagesComponent/>
+    <MessagesComponent root={messegesEl}/>
   </Provider>
 );
 
-const messegeInputEl = ReactDOM.createRoot(document.getElementById('message-input'));
-messegeInputEl.render(
+const messegeInputNode = ReactDOM.createRoot(document.getElementById('message-input'));
+messegeInputNode.render(
   <Provider store={store}>
     <MessageInput />
   </Provider>
