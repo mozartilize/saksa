@@ -5,6 +5,7 @@ import store from './store';
 
 import MessagesComponent from './MessagesComponent';
 import MessageInput from './MessageInput';
+import ChatListComponent from './ChatListComponent';
 
 import './index.css'
 
@@ -20,5 +21,12 @@ const messegeInputNode = ReactDOM.createRoot(document.getElementById('message-in
 messegeInputNode.render(
   <Provider store={store}>
     <MessageInput />
+  </Provider>
+);
+
+const chatListEl = ReactDOM.createRoot(document.getElementById('chatlist'));
+chatListEl.render(
+  <Provider store={store}>
+    <ChatListComponent />
   </Provider>
 );

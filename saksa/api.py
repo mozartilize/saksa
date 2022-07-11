@@ -1,29 +1,40 @@
-from cassandra.cluster import Cluster
+import base64
+import binascii
+
 from cassandra.util import datetime_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
+from starlette.authentication import (
+    AuthCredentials,
+    AuthenticationBackend,
+    AuthenticationError,
+    SimpleUser,
+)
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
+from starlette.middleware import Middleware
+from starlette.middleware.authentication import AuthenticationMiddleware
 
 from .auth.enpoints import AuthHtml
 from .message_service import get_messages_list, handle_send_message
+from .chatlist_service import get_chatlist_for_user
 from .response import OrjsonResponse
 from .settings import settings
-
-cluster = Cluster(["127.0.0.1"], port=9042)
-scylla = cluster.connect("saksa")
+from .scylladb import scylladb
 
 
 class UsersAPI(HTTPEndpoint):
     async def post(self, request):
         form = await request.form()
         username = form["username"]
-        future = scylla.execute_async(
-            "INSERT INTO users(username) VALUES (%s) IF NOT EXISTS", (form["username"],)
-        )
-        result = future.result().one()
+        with scylladb.make_session("saksa") as scylla_session:
+            future = scylla_session.execute_async(
+                "INSERT INTO users(username) VALUES (%s) IF NOT EXISTS",
+                (form["username"],),
+            )
+            result = future.result().one()
         if result.applied:
             kafka_client = AdminClient(
                 {"bootstrap.servers": settings.kafka_bootstrap_servers}
@@ -42,17 +53,18 @@ class UsersAPI(HTTPEndpoint):
 
 class MessagesAPI(HTTPEndpoint):
     async def get(self, request: Request):
-        message_rows = await get_messages_list(
-            scylla, chat_id=request.query_params["chat_id"]
-        )
-        data = []
-        for message_row in message_rows.all():
-            message_dict = message_row._asdict()
-            message_dict["created_at"] = datetime_from_uuid1(
-                message_dict["created_at"]
-            ).timestamp()
-            data.append(message_dict)
-        return OrjsonResponse(data)
+        with scylladb.make_session("saksa") as scylla_session:
+            message_rows = await get_messages_list(
+                scylla_session, chat_id=request.query_params["chat_id"]
+            )
+            data = []
+            for message_row in message_rows.all():
+                message_dict = message_row._asdict()
+                message_dict["created_at"] = datetime_from_uuid1(
+                    message_dict["created_at"]
+                ).timestamp()
+                data.append(message_dict)
+            return OrjsonResponse(data)
 
     async def post(self, request: Request):
         content_type = request.headers["content-type"]
@@ -62,13 +74,36 @@ class MessagesAPI(HTTPEndpoint):
             form = await request.json()
         else:
             raise HTTPException(status_code=400)
-        await handle_send_message(scylla, form)
+        with scylladb.make_session("saksa") as scylla_session:
+            await handle_send_message(scylla_session, form)
         return OrjsonResponse(None, status_code=201)
 
 
-class ChatAPI(HTTPEndpoint):
+class ChatListAPI(HTTPEndpoint):
     async def get(self, request: Request):
-        pass
+        with scylladb.make_session("saksa") as scylla_session:
+            chatlist_rows = await get_chatlist_for_user(scylla_session, request.user.username)
+            data = []
+            for chat_row in chatlist_rows.all()[::-1]:
+                chat = chat_row._asdict()
+                data.append(
+                    {
+                        "chat_id": chat["chat_id"],
+                        "latest_message_sent_at": datetime_from_uuid1(
+                            chat["latest_message_sent_at"]
+                        ).timestamp(),
+                        "latest_message": chat["latest_message"],
+                    }
+                )
+            return OrjsonResponse(data)
+
+
+class BasicAuthBackend(AuthenticationBackend):
+    async def authenticate(self, conn):
+        username = conn.cookies.get("username")
+        if username:
+            return AuthCredentials(["authenticated"]), SimpleUser(username)
+        raise AuthenticationError('Invalid auth credentials.')
 
 
 routes = [
@@ -77,8 +112,12 @@ routes = [
         routes=[
             Route("/messages", endpoint=MessagesAPI),
             Route("/users", endpoint=UsersAPI),
+            Route("/chat", endpoint=ChatListAPI),
         ],
     ),
     Route("/login", endpoint=AuthHtml),
 ]
-api = Starlette(routes=routes)
+
+middleware = [Middleware(AuthenticationMiddleware, backend=BasicAuthBackend())]
+
+api = Starlette(routes=routes, middleware=middleware)

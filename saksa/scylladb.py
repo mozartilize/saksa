@@ -1,6 +1,8 @@
 import contextlib
 from cassandra.cluster import Cluster
 
+from .settings import settings
+
 
 class ScyllaDB:
     def __init__(self, server) -> None:
@@ -17,3 +19,6 @@ class ScyllaDB:
         yield self._session
         self._session.shutdown()
         self._session = None
+
+
+scylladb = ScyllaDB(settings.SCYLLADB_SERVER)

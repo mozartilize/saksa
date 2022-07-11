@@ -47,7 +47,7 @@ def create_message(scylladb, data):
                 datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
             )
             if data.get("created_at")
-            else uuid_from_time(datetime.utcnow()),
+            else uuid_from_time(datetime.utcnow().replace(tzinfo=timezone.utc)),
         ),
     )
     return future
@@ -63,7 +63,7 @@ def create_users_latest_chat(scylladb, data):
                 datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
             )
             if data.get("created_at")
-            else uuid_from_time(datetime.utcnow()),
+            else uuid_from_time(datetime.utcnow().replace(tzinfo=timezone.utc)),
             uuid.UUID(data["chat_id"]),
             data["message"],
         ),
@@ -80,9 +80,7 @@ def delete_users_latest_chat(scylladb, data):
             data["username"],
             uuid_from_time(
                 datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
-            )
-            if data.get("created_at")
-            else uuid_from_time(datetime.utcnow()),
+            ),
         ),
     )
     return future
@@ -115,5 +113,5 @@ async def handle_send_message(scylladb, data):
         for member in members:
             print(member)
             data = {**data, "username": member}
-            nursery.start_soon(create_users_latest_chat, scylladb, data)
             nursery.start_soon(delete_users_latest_chat, scylladb, data)
+            nursery.start_soon(create_users_latest_chat, scylladb, data)

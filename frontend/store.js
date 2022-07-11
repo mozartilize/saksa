@@ -5,6 +5,7 @@ import {currentUser} from "./features/auth";
 import {chatList, selectingChatId, newMessageTimestamp} from "./features/chatlist";
 
 import { messagesApi } from './api/messages'
+import { chatListApi } from './api/chatlist'
 
 
 export default configureStore({
@@ -15,7 +16,8 @@ export default configureStore({
     chatList: chatList.reducer,
     selectingChatId: selectingChatId.reducer,
     newMessageTimestamp: newMessageTimestamp.reducer,
-    [messagesApi.reducerPath]: messagesApi.reducer
+    [messagesApi.reducerPath]: messagesApi.reducer,
+    [chatListApi.reducerPath]: chatListApi.reducer,
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware().concat(messagesApi.middleware)
