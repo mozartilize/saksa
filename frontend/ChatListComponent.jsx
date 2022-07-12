@@ -1,11 +1,14 @@
 import { Fragment } from 'react';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useFetchChatListQuery } from "./api/chatlist";
+
+import {setChat} from "./features/chatlist";
 
 export function ChatComponent(props) {
   const msOffset = new Date().getTimezoneOffset() * 60;
+  const dispatch = useDispatch();
   return (
-    <div className="chat">
+    <div className="chat" onClick={() => dispatch(setChat(props.chat.chat_id))}>
       <div>
         {props.chat.chat_id.substring(0, 8)}
       </div>

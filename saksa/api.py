@@ -1,6 +1,3 @@
-import base64
-import binascii
-
 from cassandra.util import datetime_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.authentication import (
@@ -12,6 +9,7 @@ from starlette.authentication import (
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
+from starlette.responses import Response
 from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
@@ -23,6 +21,11 @@ from .chatlist_service import get_chatlist_for_user
 from .response import OrjsonResponse
 from .settings import settings
 from .scylladb import scylladb
+
+
+class AuthVerificationAPI(HTTPEndpoint):
+    async def get(self, request):
+        return Response(status_code=204)
 
 
 class UsersAPI(HTTPEndpoint):
@@ -113,6 +116,7 @@ routes = [
             Route("/messages", endpoint=MessagesAPI),
             Route("/users", endpoint=UsersAPI),
             Route("/chat", endpoint=ChatListAPI),
+            Route("/auth/verify", endpoint=AuthVerificationAPI),
         ],
     ),
     Route("/login", endpoint=AuthHtml),

@@ -2,10 +2,11 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import {chatMessages, inputMessage} from "./features/chatbox";
 import {currentUser} from "./features/auth";
-import {chatList, selectingChatId, newMessageTimestamp} from "./features/chatlist";
+import {chatList, selectingChatId, newMessageTimestampWS} from "./features/chatlist";
 
 import { messagesApi } from './api/messages'
 import { chatListApi } from './api/chatlist'
+import { authApi } from './api/auth'
 
 
 export default configureStore({
@@ -15,10 +16,11 @@ export default configureStore({
     currentUser: currentUser.reducer,
     chatList: chatList.reducer,
     selectingChatId: selectingChatId.reducer,
-    newMessageTimestamp: newMessageTimestamp.reducer,
+    newMessageTimestampWS: newMessageTimestampWS.reducer,
+    [authApi.reducerPath]: authApi.reducer,
     [messagesApi.reducerPath]: messagesApi.reducer,
     [chatListApi.reducerPath]: chatListApi.reducer,
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat(messagesApi.middleware)
+    getDefaultMiddleware().concat(messagesApi.middleware, chatListApi.middleware)
 })

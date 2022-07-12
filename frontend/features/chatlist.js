@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { trigger } from "../events";
 
 export const chatList = createSlice({
   name: 'chatList',
@@ -28,8 +27,8 @@ export const selectingChatId = createSlice({
   },
 })
 
-export const newMessageTimestamp = createSlice({
-  name: 'newMessageTimestamp',
+export const newMessageTimestampWS = createSlice({
+  name: 'newMessageTimestampWS',
   initialState: {
     value: 0,
   },
@@ -42,4 +41,4 @@ export const newMessageTimestamp = createSlice({
 
 export const {setChatList, addChat} = chatList.actions;
 export const {setChat} = selectingChatId.actions;
-export const {triggerNewMessageEvent} = newMessageTimestamp.actions;
+export const {triggerNewMessageEvent} = newMessageTimestampWS.actions;
