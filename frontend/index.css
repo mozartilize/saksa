@@ -19,6 +19,15 @@ html, body {
   width: 30%;
   height: 100%;
   padding: 4px;
+  overflow-y: scroll;
+}
+
+#search-chat {
+  margin: 8px;
+}
+
+#search-chat input {
+  width: 100%;
 }
 
 #chatlist .chat {

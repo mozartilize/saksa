@@ -16,7 +16,6 @@ class IndexNamespace(socketio.AsyncNamespace):
             session["consumer_exec"] = consumer_exec
 
     async def on_disconnect(self, sid):
-        print("hello disconnecting...")
         try:
             session_data = await self.get_session(sid)
             consumer_exec = session_data["consumer_exec"]

@@ -2,6 +2,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { io } from "socket.io-client";
 
 import store from "../store";
+import { messagesApi } from "./messages";
+import { triggerNewMessageEvent } from '../features/chatlist';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -9,52 +11,50 @@ export const authApi = createApi({
   tagTypes: ['auth'],
   endpoints: builder => ({
     verifyUser: builder.query({
-      query: "/auth/verify",
+      query: () => "/auth/verify",
       async onCacheEntryAdded(
         arg,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
+        { cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         // create a websocket connection when the cache subscription starts
         const state = store.getState();
         const ws = io("/", {auth: {username: state.currentUser.value}, transports: ["websocket"]});
         try {
           // wait for the initial query to resolve before proceeding
-          await cacheDataLoaded
+          await cacheDataLoaded;
 
-          // // when data is received from the socket connection to the server,
-          // // if it is a message and for the appropriate channel,
-          // // update our query result with the received message
-          // const listener = (event) => {
-          //   const data = JSON.parse(event.data)
-          //   if (!isMessage(data) || data.channel !== arg) return
-
-          //   updateCachedData((draft) => {
-          //     draft.push(data)
-          //   })
-          // }
+          // when data is received from the socket connection to the server,
+          // if it is a message and for the appropriate channel,
+          // update our query result with the received message
           ws.on("connect", (arg) => {
             console.log("I'm connected");
           });
-          ws.on("message", (data) => {
-            const buffer = new Uint8Array(data);
+          ws.on("message", (bin_data) => {
+            const state = store.getState();
+            const buffer = new Uint8Array(bin_data);
             const fileString= new TextDecoder().decode(buffer);
             const message = JSON.parse(fileString);
             console.log(message);
-            updateCachedData((draft) => {
-              if (draft[draft.length-1].created_at != message.created_at) {
-                draft.push(message);
+            const {status, data} = messagesApi.endpoints.fetchMessages.select(state.selectingChatId.value)(state);
+            if (status === "fulfilled") {
+              if (data[data.length-1].created_at != message.created_at) {
+                dispatch(
+                  messagesApi.util.updateQueryData('fetchMessages', state.selectingChatId.value, (draft) => {
+                    draft.push(message);
+                  })
+                )
                 dispatch(triggerNewMessageEvent(message.created_at));
               }
-            })
+            }
           });
         } catch {
           // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
           // in which case `cacheDataLoaded` will throw
         }
         // cacheEntryRemoved will resolve when the cache subscription is no longer active
-        await cacheEntryRemoved
+        await cacheEntryRemoved;
         // perform cleanup steps once the `cacheEntryRemoved` promise resolves
-        ws.disconnect()
+        ws.disconnect();
       },
     }),
   })

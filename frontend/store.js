@@ -22,5 +22,5 @@ export default configureStore({
     [chatListApi.reducerPath]: chatListApi.reducer,
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat(messagesApi.middleware, chatListApi.middleware)
+    getDefaultMiddleware().concat(messagesApi.middleware, chatListApi.middleware, authApi.middleware)
 })

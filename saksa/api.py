@@ -85,7 +85,9 @@ class MessagesAPI(HTTPEndpoint):
 class ChatListAPI(HTTPEndpoint):
     async def get(self, request: Request):
         with scylladb.make_session("saksa") as scylla_session:
-            chatlist_rows = await get_chatlist_for_user(scylla_session, request.user.username)
+            chatlist_rows = await get_chatlist_for_user(
+                scylla_session, request.user.username
+            )
             data = []
             for chat_row in chatlist_rows.all()[::-1]:
                 chat = chat_row._asdict()
@@ -106,7 +108,7 @@ class BasicAuthBackend(AuthenticationBackend):
         username = conn.cookies.get("username")
         if username:
             return AuthCredentials(["authenticated"]), SimpleUser(username)
-        raise AuthenticationError('Invalid auth credentials.')
+        raise AuthenticationError("Invalid auth credentials.")
 
 
 routes = [

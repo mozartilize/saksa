@@ -27,6 +27,11 @@ export default function ChatListComponent(props) {
 
   const { data, isLoading } = useFetchChatListQuery(currentUser);
   return (
-    isLoading ? <Fragment></Fragment> : data.map(chat => <ChatComponent key={chat.chat_id} chat={chat}/>)
+    <Fragment>
+      <div id="search-chat">
+        <input type="text" name="search_chat" id="search-chat-input" />
+      </div>
+      {isLoading ?  <Fragment></Fragment> : data.map(chat => <ChatComponent key={chat.chat_id} chat={chat}/>)}
+    </Fragment>
   )
 }

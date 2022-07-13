@@ -3,15 +3,12 @@ import { Provider } from 'react-redux';
 
 import store from './store';
 
-import { authApi, useVerifyUserQuery } from "./api/auth";
-
 import MessagesComponent from './MessagesComponent';
 import MessageInput from './MessageInput';
 import ChatListComponent from './ChatListComponent';
+import UserComponent from './UserComponent';
 
 import './index.css'
-
-store.dispatch(authApi.endpoints.verifyUser.initiate());
 
 const messegesEl = document.getElementById('messages');
 const messagesNode = ReactDOM.createRoot(messegesEl);
@@ -32,5 +29,12 @@ const chatListEl = ReactDOM.createRoot(document.getElementById('chatlist'));
 chatListEl.render(
   <Provider store={store}>
     <ChatListComponent />
+  </Provider>
+);
+
+const userEl = ReactDOM.createRoot(document.getElementById('user'));
+userEl.render(
+  <Provider store={store}>
+    <UserComponent />
   </Provider>
 );

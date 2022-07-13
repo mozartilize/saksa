@@ -32,9 +32,10 @@ export default function MessageInput(props) {
   }
 
   return (
+    selectingChatId ?
     <Fragment>
       <textarea name="" id="" cols="30" rows="5" value={inputMessage} onChange={(event) => dispatch(setInputMsg(event.target.value))} onKeyDown={onEnterPress}></textarea>
       <button onClick={handleSendMessage} disabled={isLoading}>Send</button>
-    </Fragment>
+    </Fragment> : <Fragment></Fragment>
   )
 }

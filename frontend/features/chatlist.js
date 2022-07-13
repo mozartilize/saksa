@@ -18,7 +18,7 @@ export const chatList = createSlice({
 export const selectingChatId = createSlice({
   name: 'selectingChatId',
   initialState: {
-    value: "f8680106-a790-4b6e-912f-7adb93f2a69a",
+    value: null,
   },
   reducers: {
     setChat: (state, action) => {
