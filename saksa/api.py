@@ -1,3 +1,4 @@
+from accept_types import get_best_match
 from cassandra.util import datetime_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.authentication import (
@@ -8,12 +9,13 @@ from starlette.authentication import (
 )
 from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
-from starlette.requests import Request
-from starlette.responses import Response
+from starlette.requests import HTTPConnection, Request
+from starlette.responses import RedirectResponse, Response
 from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
 from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.templating import Jinja2Templates
 
 from .auth.enpoints import AuthHtml
 from .message_service import get_messages_list, handle_send_message
@@ -111,19 +113,36 @@ class BasicAuthBackend(AuthenticationBackend):
         raise AuthenticationError("Invalid auth credentials.")
 
 
-routes = [
-    Mount(
-        "/api/v1",
-        routes=[
-            Route("/messages", endpoint=MessagesAPI),
-            Route("/users", endpoint=UsersAPI),
-            Route("/chat", endpoint=ChatListAPI),
-            Route("/auth/verify", endpoint=AuthVerificationAPI),
-        ],
-    ),
-    Route("/login", endpoint=AuthHtml),
-]
+def auth_error_handler(conn: HTTPConnection, exc: Exception) -> Response:
+    if (
+        get_best_match(conn.headers["accept"], ["text/html", "application/json"])
+        == "text/html"
+    ):
+        return RedirectResponse("/login", status_code=301)
+    return Response(status_code=401)
 
-middleware = [Middleware(AuthenticationMiddleware, backend=BasicAuthBackend())]
 
-api = Starlette(routes=routes, middleware=middleware)
+class IndexHtml(HTTPEndpoint):
+    async def get(self, request: Request):
+        templates = Jinja2Templates(directory=settings.INDEX_TEMPLATE_DIR)
+        return templates.TemplateResponse("index.html", context={"request": request})
+
+
+api_routes = Mount(
+    "/api/v1",
+    routes=[
+        Route("/messages", endpoint=MessagesAPI),
+        Route("/users", endpoint=UsersAPI),
+        Route("/chat", endpoint=ChatListAPI),
+        Route("/auth/verify", endpoint=AuthVerificationAPI),
+    ],
+)
+api_routes.app = AuthenticationMiddleware(api_routes.app, backend=BasicAuthBackend(), on_error=auth_error_handler)
+login_route = Route("/login", endpoint=AuthHtml)
+index_route = Route("/", endpoint=IndexHtml)
+index_route.app = AuthenticationMiddleware(index_route.app, backend=BasicAuthBackend(), on_error=auth_error_handler)
+
+
+routes = [api_routes, login_route, index_route]
+
+api = Starlette(routes=routes)

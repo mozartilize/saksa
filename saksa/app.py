@@ -70,7 +70,6 @@ def create_app():
         sio,
         other_asgi_app=api,
         static_files={
-            "/": str(settings.BASE_DIR.joinpath("static/index.html")),
             "/assets": str(settings.BASE_DIR.joinpath("static/assets")),
         },
     )

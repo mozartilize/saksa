@@ -38,6 +38,10 @@ class Setting:
         )
 
     @property
+    def INDEX_TEMPLATE_DIR(self):
+        return self.TEMPLATE_DIR.joinpath("..")
+
+    @property
     def SCYLLADB_SERVER(self):
         return os.environ.get("SCYLLADB_SERVER") or "localhost"
 

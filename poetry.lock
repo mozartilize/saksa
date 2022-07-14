@@ -1,4 +1,12 @@
 [[package]]
+name = "accept-types"
+version = "0.4.1"
+description = "Determine the best content to send in an HTTP response"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "aiohttp"
 version = "3.8.1"
 description = "Async http client/server framework (asyncio)"
@@ -759,9 +767,10 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f5a05cc989ea50e63258aa5817892fac432c013e245c508706652d11844c09ad"
+content-hash = "1479e668f91f2e613cb8cb5005dab189bd85957fd591b569773d5ee50a330e17"
 
 [metadata.files]
+accept-types = []
 aiohttp = [
     {file = "aiohttp-3.8.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1ed0b6477896559f17b9eaeb6d38e07f7f9ffe40b9f0f9627ae8b9926ae260a8"},
     {file = "aiohttp-3.8.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7dadf3c307b31e0e61689cbf9e06be7a867c563d5a63ce9dca578f956609abf8"},

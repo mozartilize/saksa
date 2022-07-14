@@ -1,13 +1,16 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore } from "@reduxjs/toolkit";
 
-import {chatMessages, inputMessage} from "./features/chatbox";
-import {currentUser} from "./features/auth";
-import {chatList, selectingChatId, newMessageTimestampWS} from "./features/chatlist";
+import { chatMessages, inputMessage } from "./features/chatbox";
+import { currentUser } from "./features/auth";
+import {
+  chatList,
+  selectingChatId,
+  newMessageTimestampWS,
+} from "./features/chatlist";
 
-import { messagesApi } from './api/messages'
-import { chatListApi } from './api/chatlist'
-import { authApi } from './api/auth'
-
+import { messagesApi } from "./api/messages";
+import { chatListApi } from "./api/chatlist";
+import { authApi } from "./api/auth";
 
 export default configureStore({
   reducer: {
@@ -21,6 +24,10 @@ export default configureStore({
     [messagesApi.reducerPath]: messagesApi.reducer,
     [chatListApi.reducerPath]: chatListApi.reducer,
   },
-  middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat(messagesApi.middleware, chatListApi.middleware, authApi.middleware)
-})
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(
+      messagesApi.middleware,
+      chatListApi.middleware,
+      authApi.middleware
+    ),
+});

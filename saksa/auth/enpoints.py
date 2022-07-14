@@ -1,3 +1,4 @@
+from os import stat
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
@@ -37,6 +38,6 @@ class AuthHtml(HTTPEndpoint):
             )
             for _, f in fs.items():
                 f.result()
-        resp = RedirectResponse("/")
+        resp = RedirectResponse("/", status_code=301)
         resp.set_cookie("username", username, secure=True)
         return resp
