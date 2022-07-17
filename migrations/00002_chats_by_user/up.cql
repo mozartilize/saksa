@@ -13,5 +13,6 @@ CREATE TABLE chats_by_user (
     chat_id UUID,
     latest_message_sent_at TIMEUUID,
     latest_message TEXT,
+    name VARCHAR,
     PRIMARY KEY (username, chat_id, latest_message_sent_at)
 );

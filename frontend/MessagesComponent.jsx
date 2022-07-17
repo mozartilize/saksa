@@ -5,13 +5,13 @@ import MessageComponent from "./MessageComponent";
 import { useFetchMessagesQuery } from "./api/messages";
 
 export default function MessagesComponent(props) {
-  const selectingChatId = useSelector((state) => state.selectingChatId.value);
+  const selectingChat = useSelector((state) => state.selectingChat.value);
   const newMessageTimestampWS = useSelector(
     (state) => state.newMessageTimestampWS.value
   );
 
-  const { data, isLoading } = useFetchMessagesQuery(selectingChatId, {
-    skip: selectingChatId === null,
+  const { data, isLoading } = useFetchMessagesQuery(selectingChat ? selectingChat.chat_id : null, {
+    skip: selectingChat === null || (selectingChat && !selectingChat.chat_id),
   });
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { chatMessages, inputMessage } from "./features/chatbox";
 import { currentUser } from "./features/auth";
 import {
   chatList,
-  selectingChatId,
+  selectingChat,
   newMessageTimestampWS,
 } from "./features/chatlist";
 
@@ -18,7 +18,7 @@ export default configureStore({
     inputMessage: inputMessage.reducer,
     currentUser: currentUser.reducer,
     chatList: chatList.reducer,
-    selectingChatId: selectingChatId.reducer,
+    selectingChat: selectingChat.reducer,
     newMessageTimestampWS: newMessageTimestampWS.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [messagesApi.reducerPath]: messagesApi.reducer,

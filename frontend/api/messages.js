@@ -1,5 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+import { setChatNew } from '../features/chatlist';
+
+
 export const messagesApi = createApi({
   reducerPath: 'messagesApi',
   baseQuery: fetchBaseQuery({ baseUrl: '/api/v1' }),
@@ -14,15 +17,27 @@ export const messagesApi = createApi({
         method: "post",
         body: messageFormData,
       }),
-      onQueryStarted: async (messageFormData, { dispatch, queryFulfilled }) => {
+      onQueryStarted: async (messageFormData, { dispatch, getState, queryFulfilled }) => {
         const selectingChatId = messageFormData["chat_id"];
-        const patchResult = dispatch(
-          messagesApi.util.updateQueryData('fetchMessages', selectingChatId, (draft) => {
-            draft.push(messageFormData);
-          })
-        )
+        if (selectingChatId) {
+          const patchResult = dispatch(
+            messagesApi.util.updateQueryData('fetchMessages', selectingChatId, (draft) => {
+              draft.push(messageFormData);
+            })
+          )
+        }
         try {
-          await queryFulfilled
+          const {data} = await queryFulfilled;
+          if (!selectingChatId) {
+            const state = getState();
+            const newChat = {
+              chat_id: data["chat_id"],
+              latest_message_sent_at: messageFormData["created_at"],
+              latest_message: messageFormData["message"],
+              name: state.selectingChat.value.name,
+            }
+            dispatch(setChatNew(newChat));
+          }
         } catch {
           // patchResult.undo();
         }
