@@ -1,0 +1,83 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#app {
+  display: flex;
+  height: 100%;
+  width: 800px;
+  padding: 4px;
+  margin: auto;
+}
+
+#chatlist {
+  width: 30%;
+  height: 100%;
+  padding: 4px;
+  overflow-y: scroll;
+}
+
+#search-chat {
+  margin: 8px;
+}
+
+#search-chat input {
+  width: 100%;
+}
+
+#chatlist .chat {
+  border-radius: 2px;
+  background-color: lavender;
+  border: 1px solid rgb(211, 201, 240);
+  padding: 10px;
+  margin: 8px;
+  cursor: pointer;
+}
+
+#chatlist .chat:hover {
+  opacity: 0.85;
+}
+
+#chatbox {
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-content: stretch;
+  padding: 4px;
+}
+
+#messages {
+  flex-grow: 1;
+  width: 100%;
+  overflow-y: scroll;
+}
+
+.message.isOut {
+  display: flex;
+  justify-content: end;
+}
+
+.message > div {
+  display: inline-block;
+  word-break: break-word;
+  white-space: pre-wrap;
+  padding: 4px 8px;
+}
+
+.message {
+  padding: 2px;
+}
+
+.message.isOut > div {
+  background-color: yellow;
+}
+
+.message.isIn > div {
+  background-color: lightgray;
+}

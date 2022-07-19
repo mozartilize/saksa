@@ -1,10 +1,12 @@
 import asyncio
 import trio
 
+
 async def aio_main():
     loop = asyncio.get_running_loop()
 
     trio_done_fut = asyncio.Future()
+
     def trio_done_callback(main_outcome):
         print(f"trio_main finished: {main_outcome!r}")
         trio_done_fut.set_result(main_outcome)
@@ -34,6 +36,7 @@ async def trio_main():
         await from_trio.put(n + 1)
         if n >= 10:
             return
+
 
 async def aio_pingpong(from_trio, to_trio):
     print("aio_pingpong!")

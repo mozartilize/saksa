@@ -3,6 +3,8 @@ version: "2.3"
 services:
   zookeeper:
     image: 'zookeeper:3.7'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
     restart: "always"
     volumes:
       - 'zookeeper-datalog:/datalog'
@@ -12,19 +14,64 @@ services:
     image: 'bitnami/kafka:latest'
     ports:
       - '9092:9092'
+      - '9093:9093'
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
     restart: "always"
     volumes:
      - 'kafka-data:/bitnami/kafka'
 
+  connect:
+    build: docker/connect
+    ports:
+      - 8083:8083
+    environment:
+      - CONNECT_GROUP_ID=1
+      - CONNECT_CONFIG_STORAGE_TOPIC=my-connect-configs
+      - CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_OFFSET_STORAGE_TOPIC=my-connect-offsets
+      - CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_STATUS_STORAGE_TOPIC=my-connect-statuses
+      - CONNECT_STATUS_STORAGE_REPLICATION_FACTOR=1
+      - CONNECT_BOOTSTRAP_SERVERS=kafka:9092
+      - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_REST_ADVERTISED_HOST_NAME=connect
+      - CONNECT_OFFSET_FLUSH_INTERVAL_MS=10000
+    links:
+      - zookeeper:zookeeper
+      - kafka:kafka
+    depends_on:
+      - kafka
+    restart: "always"
+
+  scylladb:
+    image: scylladb/scylla
+    environment:
+      - CQLSH_HOST=scylladb
+    command: --developer-mode=1
+    ports:
+      - '9042:9042'
+    volumes:
+      - scylladb:/var/lib/scylla
+    healthcheck:
+      test: ["CMD", "cqlsh", "-k", "saksa"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
 volumes:
   zookeeper-datalog:
   zookeeper-data:
   kafka-data:
+  connect-data:
+  scylladb:
