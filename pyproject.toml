@@ -4,6 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
+packages = [
+  { include = "saksa" },
+]
+include = ["saksa/static/**/*"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
