@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "saksa"
-version = "0.2.dev1"
+version = "0.2.dev2"
 description = ""
 authors = ["Your Name <you@example.com>"]
 license = "MIT"
