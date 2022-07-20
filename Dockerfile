@@ -41,10 +41,10 @@ COPY --from=assests-builder /app/saksa/static ./saksa/static
 
 RUN poetry build
 
-RUN python -m venv .venv
+RUN python -m venv /.venv
 
-ENV PATH="/app/.venv/bin:$PATH"
-ENV VIRTUAL_ENV="/app/.venv"
+ENV PATH="/.venv/bin:$PATH"
+ENV VIRTUAL_ENV="/.venv"
 
 RUN CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/rocksdb/include \
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/rocksdb/build \
@@ -57,7 +57,7 @@ RUN apt update && apt install libsnappy1v5 -y && rm -rf /var/lib/apt/lists/*
 
 COPY --from=saksa-builder /rocksdb/build/librocksdb.so.6.29.5 /usr/lib/x86_64-linux-gnu/librocksdb.so.6
 
-COPY --from=saksa-builder /app/.venv /.venv
+COPY --from=saksa-builder /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 ENV VIRTUAL_ENV="./venv"
 
