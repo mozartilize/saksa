@@ -57,9 +57,12 @@ RUN CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/rocksdb/include \
 
 FROM python:3.8-slim
 
+ARG VERSION=$VERSION
+
 RUN apt update && apt install libsnappy1v5 -y && rm -rf /var/lib/apt/lists/*
 
 COPY --from=saksa-builder /rocksdb/build/librocksdb.so.6.29.5 /usr/lib/x86_64-linux-gnu/librocksdb.so.6
+COPY --from=saksa-builder /app/dist/saksa-${VERSION}-py3-none-any.whl /saksa-${VERSION}-py3-none-any.whl
 
 COPY --from=saksa-builder /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
