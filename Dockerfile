@@ -61,6 +61,8 @@ COPY --from=saksa-builder /.venv /.venv
 ENV PATH="/.venv/bin:$PATH"
 ENV VIRTUAL_ENV="./venv"
 
-RUN useradd saksa
+RUN useradd -m saksa
 
 USER saksa
+
+WORKDIR /home/saksa
