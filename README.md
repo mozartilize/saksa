@@ -59,6 +59,21 @@ You can run with provided `docker-compose.yml`.
 $ docker-compose up -d
 ```
 
+For scylladb, you need to manually create `saksa` keyspace.
+Then run migrations, with example command:
+
+```
+$ cat migrations/00001_create_messages_table/up.cql | docker exec -i saksa_scylladb_1 cqlsh -k saksa
+```
+
+The scylla connector requires `messages` table to be created first.
+
+Install the connector:
+
+```
+$ curl -XPUT localhost:8083/connectors/ScyllaConnector/config -d @docker/connect/scylla-connector.json -H 'Content-Type: application/json'
+```
+
 2. Configuration
 
 Create an `.env` file in the root repo and add values for each setting described above.

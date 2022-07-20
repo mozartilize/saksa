@@ -5,4 +5,4 @@ CREATE TABLE messages (
     created_at TIMEUUID,
     PRIMARY KEY (chat_id, created_at)
 )
-WITH CLUSTERING ORDER BY (created_at DESC);
+WITH CLUSTERING ORDER BY (created_at DESC) AND cdc = { 'enabled': true };
