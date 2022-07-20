@@ -1,3 +1,5 @@
+ARG VERSION
+
 FROM node:lts-alpine AS assests-builder
 
 WORKDIR /app
@@ -15,6 +17,8 @@ COPY ./templates ./templates
 RUN yarn build
 
 FROM docker.io/python:3.8 AS saksa-builder
+
+ARG VERSION=$VERSION
 
 RUN apt update && apt install cmake libsnappy-dev liblz4-dev -y && rm -rf /var/lib/apt/lists/*
 
@@ -49,7 +53,7 @@ ENV VIRTUAL_ENV="/.venv"
 RUN CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:/rocksdb/include \
 	LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/rocksdb/build \
 	LIBRARY_PATH=${LIBRARY_PATH}:/rocksdb/build \
-	pip install dist/saksa-0.1.0-py3-none-any.whl
+	pip install dist/saksa-${VERSION}-py3-none-any.whl
 
 FROM python:3.8-slim
 
