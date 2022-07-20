@@ -8,7 +8,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  VERSION: ${{ ${GITHUB_REF:10} }}
 
 jobs:
   build-and-push-image:
@@ -50,11 +49,12 @@ jobs:
     container: ghcr.io/mozartilize/saksa:latest
 
     steps:
-      - name: Check
-        run: echo ${{ env.VERSION }}
+      - name: set env
+        run: |
+          echo "VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
 
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
           name: saksa
-          path: /saksa-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}-py3-none-any.whl
+          path: /saksa-${{ env.VERSION }}-py3-none-any.whl
