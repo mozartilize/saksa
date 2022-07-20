@@ -71,13 +71,8 @@ jobs:
     container: ghcr.io/mozartilize/saksa:latest
 
     steps:
-      - name: set env
-        shell: bash
-        run: |
-          echo "VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
-
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
           name: saksa
-          path: /saksa-${{ env.VERSION }}-py3-none-any.whl
+          path: /saksa-${{ GITHUB_REF_NAME }}-py3-none-any.whl
