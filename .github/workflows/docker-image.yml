@@ -40,9 +40,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          key: ${{ runner.os }}-buildx
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -75,4 +73,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: saksa
-          path: /saksa-${GITHUB_REF_NAME}-py3-none-any.whl
+          path: /saksa-${{ ${GITHUB_REF_NAME} }}-py3-none-any.whl
