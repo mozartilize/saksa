@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { setInputMsg, emptyInputMsg } from "./features/chatbox";
+import { setInputMsg, emptyInputMsg, pushSentMsgIdentifier } from "./features/chatbox";
 import { useSendMessageMutation } from "./api/messages";
 import { triggerNewMessageEvent } from "./features/chatlist";
 
@@ -26,6 +26,9 @@ export default function MessageInput(props) {
     await sendMessage(msg).unwrap();
     dispatch(emptyInputMsg());
     dispatch(triggerNewMessageEvent(msg.created_at));
+    if (selectingChat.chat_id) {
+      dispatch(pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`));
+    }
   }
 
   function onEnterPress(e) {

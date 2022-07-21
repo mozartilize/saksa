@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { chatMessages, inputMessage } from "./features/chatbox";
+import { chatMessages, inputMessage, sentMsgIdentifiers } from "./features/chatbox";
 import { currentUser } from "./features/auth";
 import {
   chatList,
@@ -16,6 +16,7 @@ export default configureStore({
   reducer: {
     chatMessages: chatMessages.reducer,
     inputMessage: inputMessage.reducer,
+    sentMsgIdentifiers: sentMsgIdentifiers.reducer,
     currentUser: currentUser.reducer,
     chatList: chatList.reducer,
     selectingChat: selectingChat.reducer,
