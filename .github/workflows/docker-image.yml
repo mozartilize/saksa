@@ -81,6 +81,7 @@ jobs:
     steps:
       - name: Get package version
         id: get_package_version
+        shell: bash
         run: |
           version_line=$(grep ^version pyproject.toml)
           echo '::set-output name=version::${version_line:11:-1}'
