@@ -79,8 +79,14 @@ jobs:
     container: ghcr.io/mozartilize/saksa:latest
 
     steps:
+      - name: Get package version
+        id: get_package_version
+        run: |
+          version_line=$(grep ^version pyproject.toml)
+          echo '::set-output name=version::${version_line:11:-1}'
+
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
-          name: saksa-${{ github.ref_name }}-py3-none-any.zip
-          path: /saksa-${{ github.ref_name }}-py3-none-any.whl
+          name: saksa-${{ steps.get_package_version.outputs.version }}-py3-none-any.zip
+          path: /saksa-${{ steps.get_package_version.outputs.version }}-py3-none-any.whl
