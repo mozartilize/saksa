@@ -40,7 +40,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -52,6 +53,14 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Temp fix
+      # https://github.com/docker/build-push-action/issues/252
+      # https://github.com/moby/buildkit/issues/1896
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
   upload-artifacts:
     needs: build-and-push-image
@@ -65,4 +74,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: saksa
-          path: /saksa-${{ env.GITHUB_REF_NAME }}-py3-none-any.whl
+          path: /saksa-${{ github.ref_name }}-py3-none-any.whl
