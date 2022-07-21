@@ -73,5 +73,5 @@ jobs:
       - name: Upload package
         uses: actions/upload-artifact@v3
         with:
-          name: saksa
+          name: saksa-${{ github.ref_name }}-py3-none-any.zip
           path: /saksa-${{ github.ref_name }}-py3-none-any.whl
