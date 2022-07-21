@@ -81,10 +81,8 @@ jobs:
     steps:
       - name: Get package version
         id: get_package_version
-        shell: bash
         run: |
-          version_line=$(grep ^version pyproject.toml)
-          echo '::set-output name=version::${version_line:11:-1}'
+          echo ::set-output name=version::$(python -c 'from importlib.metadata import version; print(version("saksa"))')
 
       - name: Upload package
         uses: actions/upload-artifact@v3
