@@ -25,9 +25,7 @@ jobs:
       - name: Get package version
         id: get_package_version
         run: |
-          version_line=$(grep ^version pyproject.toml)
-          version=${version_line:11:-1}
-          echo '::set-output name=version::$version'
+          echo ::set-output name=version::$(grep ^version pyproject.toml | cut -c 11- | sed 's/"//g')
 
       - name: Log in to the Container registry
         uses: docker/login-action@v2
