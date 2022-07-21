@@ -15,6 +15,22 @@ export const chatMessages = createSlice({
   },
 })
 
+export const sentMsgIdentifiers = createSlice({
+  name: 'sentMsgIdentifiers',
+  initialState: {
+    value: {},
+  },
+  reducers: {
+    pushSentMsgIdentifier: (state, action) => {
+      state.value = {...state.value, [action.payload]: true};
+    },
+    removeSentMsgIdentifier: (state, action) => {
+      const { [action.payload]: val, ...others } = state.value;
+      state.value = others;
+    },
+  },
+})
+
 export const inputMessage = createSlice({
   name: 'inputMessage',
   initialState: {
@@ -32,3 +48,4 @@ export const inputMessage = createSlice({
 
 export const {setMessages, pushMsg} = chatMessages.actions;
 export const {setInputMsg, emptyInputMsg} = inputMessage.actions;
+export const {pushSentMsgIdentifier, removeSentMsgIdentifier} = sentMsgIdentifiers.actions;

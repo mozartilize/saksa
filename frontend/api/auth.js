@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import store from "../store";
 import { messagesApi } from "./messages";
 import { triggerNewMessageEvent } from '../features/chatlist';
+import { removeSentMsgIdentifier } from '../features/chatbox';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -35,16 +36,16 @@ export const authApi = createApi({
             const fileString= new TextDecoder().decode(buffer);
             const message = JSON.parse(fileString);
             console.log(message);
-            const {status, data} = messagesApi.endpoints.fetchMessages.select(state.selectingChat.value.chat_id)(state);
-            if (status === "fulfilled") {
-              if (data[data.length-1].created_at != message.created_at) {
-                dispatch(
-                  messagesApi.util.updateQueryData('fetchMessages', state.selectingChat.value.chat_id, (draft) => {
-                    draft.push(message);
-                  })
-                )
-                dispatch(triggerNewMessageEvent(message.created_at));
-              }
+            if (!state.sentMsgIdentifiers.value[`${message.chat_id}:${message.created_at}`]) {
+              dispatch(
+                messagesApi.util.updateQueryData('fetchMessages', state.selectingChat.value.chat_id, (draft) => {
+                  draft.push(message);
+                })
+              )
+              dispatch(triggerNewMessageEvent(message.created_at));
+            }
+            else {
+              dispatch(removeSentMsgIdentifier(`${message.chat_id}:${message.created_at}`));
             }
           });
         } catch {
