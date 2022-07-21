@@ -58,8 +58,8 @@ jobs:
           build-args: |
             VERSION=${{ steps.get_package_version.outputs.version }}
           tags: |
-            latest
-            ${{ steps.get_package_version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.get_package_version.outputs.version }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
