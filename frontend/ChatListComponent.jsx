@@ -1,11 +1,13 @@
 import { Fragment, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useFetchChatListQuery, chatListApi } from "./api/chatlist";
+import classNames from "classnames";
+import { useFetchChatListQuery } from "./api/chatlist";
 import { messagesApi } from "./api/messages";
 
 import { setChatNew } from "./features/chatlist";
 
 function ChatComponent(props) {
+  const selectingChat = useSelector((state) => state.selectingChat.value);
   const msOffset = new Date().getTimezoneOffset() * 60;
   const dispatch = useDispatch();
 
@@ -19,7 +21,11 @@ function ChatComponent(props) {
   }
 
   return (
-    <div className="chat" onClick={onSelectChat}>
+    <div className={classNames("chat", {
+        selected: selectingChat && selectingChat.chat_id == props.chat.chat_id}
+      )}
+      onClick={onSelectChat}
+    >
       <div><b>{props.chat.name}</b></div>
       <div>{props.chat.latest_message}</div>
       <div>

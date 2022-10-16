@@ -41,6 +41,7 @@ services:
       - BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       - kafka
+      - scylladb
     restart: "always"
 
   scylladb:

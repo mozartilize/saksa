@@ -1,7 +1,12 @@
-import { Fragment } from "react";
+import { useSelector } from "react-redux";
 import { useVerifyUserQuery } from "./api/auth";
 
 export default function UserComponent(props) {
   useVerifyUserQuery();
-  return <Fragment></Fragment>;
+
+  const currentUser = useSelector((state) => state.currentUser.value);
+
+  return (
+    <div>{currentUser} <button>Logout</button></div>
+  );
 }

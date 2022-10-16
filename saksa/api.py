@@ -13,10 +13,9 @@ from starlette.requests import HTTPConnection, Request
 from starlette.responses import RedirectResponse, Response
 from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
-from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
-from starlette.templating import Jinja2Templates
 
+from saksa.libs.templates import Jinja2Templates
 from .auth.enpoints import AuthHtml
 from .message_service import get_messages_list, handle_send_message
 from .chatlist_service import search_chatlist
@@ -136,7 +135,7 @@ def auth_error_handler(conn: HTTPConnection, exc: Exception) -> Response:
 class IndexHtml(HTTPEndpoint):
     async def get(self, request: Request):
         templates = Jinja2Templates(directory=settings.INDEX_TEMPLATE_DIR)
-        return templates.TemplateResponse("index.html", context={"request": request})
+        return templates.TemplateResponse("/index.html", context={"request": request})
 
 
 api_routes = Mount(

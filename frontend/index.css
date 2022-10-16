@@ -15,10 +15,10 @@ html, body {
   margin: auto;
 }
 
-#chatlist {
+#sidepane {
   width: 30%;
   height: 100%;
-  padding: 4px;
+  padding: 12px;
   overflow-y: scroll;
 }
 
@@ -30,13 +30,20 @@ html, body {
   width: 100%;
 }
 
+#chatlist > div {
+  margin: 4px 0;
+}
+
 #chatlist .chat {
   border-radius: 2px;
   background-color: lavender;
   border: 1px solid rgb(211, 201, 240);
   padding: 10px;
-  margin: 8px;
   cursor: pointer;
+}
+
+#chatlist .chat.selected {
+  border-left: 3px solid rgb(113, 97, 157);
 }
 
 #chatlist .chat:hover {

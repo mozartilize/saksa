@@ -16,9 +16,7 @@ if settings.ENV == "development":
     import engineio
 
     def _get_static_file(path, static_files):
-        if (
-            path == "/"
-            or path.startswith("/frontend")
+        if (path.startswith("/frontend")
             or path.startswith("/@")
             or path.startswith("/node_modules")
         ):

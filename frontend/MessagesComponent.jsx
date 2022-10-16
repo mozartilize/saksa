@@ -18,12 +18,11 @@ export default function MessagesComponent(props) {
     if (
       !isLoading &&
       data &&
-      data.length > 0 &&
-      data[data.length - 1].created_at == newMessageTimestampWS
+      data.length > 0
     ) {
       props.root.scrollTop = props.root.scrollHeight;
     }
-  }, [newMessageTimestampWS]);
+  });
 
   return isLoading || !data || (data && data.length === 0) ? (
     <Fragment></Fragment>
