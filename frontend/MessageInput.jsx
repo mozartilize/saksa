@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { setInputMsg, emptyInputMsg, pushSentMsgIdentifier } from "./features/chatbox";
 import { useSendMessageMutation } from "./api/messages";
-import { triggerNewMessageEvent } from "./features/chatlist";
+import { chatListApi } from "./api/chatlist";
 
 export default function MessageInput(props) {
   const dispatch = useDispatch();
@@ -25,7 +25,19 @@ export default function MessageInput(props) {
     }
     await sendMessage(msg).unwrap();
     dispatch(emptyInputMsg());
-    dispatch(triggerNewMessageEvent(msg.created_at));
+    dispatch(
+      chatListApi.util.updateQueryData(
+        'fetchChatList',
+        {username: currentUser, searchQuery: ""},
+        (draft) => {
+          const chatIndex = draft.map(chat => chat.chat_id).indexOf(msg.chat_id);
+          const chat = draft.splice(chatIndex, 1)[0];
+          chat.latest_message = msg.message;
+          chat.latest_message_sent_at = msg.created_at;
+          draft.unshift(chat);
+        }
+      )
+    );
     if (selectingChat.chat_id) {
       dispatch(pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`));
     }

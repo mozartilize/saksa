@@ -27,18 +27,5 @@ export const selectingChat = createSlice({
   },
 })
 
-export const newMessageTimestampWS = createSlice({
-  name: 'newMessageTimestampWS',
-  initialState: {
-    value: 0,
-  },
-  reducers: {
-    triggerNewMessageEvent: (state, action) => {
-      state.value = action.payload;
-    }
-  },
-})
-
 export const {setChatList, addChat} = chatList.actions;
 export const {setChatNew} = selectingChat.actions;
-export const {triggerNewMessageEvent} = newMessageTimestampWS.actions;

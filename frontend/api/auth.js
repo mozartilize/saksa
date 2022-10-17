@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 
 import store from "../store";
 import { messagesApi } from "./messages";
-import { triggerNewMessageEvent } from '../features/chatlist';
+import { chatListApi } from "./chatlist";
 import { removeSentMsgIdentifier } from '../features/chatbox';
 
 export const authApi = createApi({
@@ -39,10 +39,24 @@ export const authApi = createApi({
             if (!state.sentMsgIdentifiers.value[`${message.chat_id}:${message.created_at}`]) {
               dispatch(
                 messagesApi.util.updateQueryData('fetchMessages', state.selectingChat.value.chat_id, (draft) => {
-                  draft.push(message);
+                  if (state.selectingChat.value.chat_id == message.chat_id) {
+                    draft.push(message);
+                  }
                 })
-              )
-              dispatch(triggerNewMessageEvent(message.created_at));
+              );
+              dispatch(
+                chatListApi.util.updateQueryData(
+                  'fetchChatList',
+                  {username: state.currentUser.value, searchQuery: ""},
+                  (draft) => {
+                    const chatIndex = draft.map(chat => chat.chat_id).indexOf(message.chat_id);
+                    const chat = draft.splice(chatIndex, 1)[0];
+                    chat.latest_message = message.message;
+                    chat.latest_message_sent_at = message.created_at;
+                    draft.unshift(chat);
+                  }
+                )
+              );
             }
             else {
               dispatch(removeSentMsgIdentifier(`${message.chat_id}:${message.created_at}`));
