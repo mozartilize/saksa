@@ -17,4 +17,5 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+tmp/
 saksa/static
