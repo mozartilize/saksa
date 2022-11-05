@@ -16,6 +16,7 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.authentication import AuthenticationMiddleware
 
 from saksa.libs.templates import Jinja2Templates
+from saksa.libs.paginator import CursorPaginatorQuery
 from .auth.enpoints import AuthHtml
 from .message_service import get_messages_list, handle_send_message
 from .chatlist_service import search_chatlist
@@ -57,9 +58,13 @@ class UsersAPI(HTTPEndpoint):
 
 class MessagesAPI(HTTPEndpoint):
     async def get(self, request: Request):
+        paginator_schema = CursorPaginatorQuery()
+        paginator_params = paginator_schema.load(request.query_params)
         with scylladb.make_session("saksa") as scylla_session:
             message_rows = await get_messages_list(
-                scylla_session, chat_id=request.query_params["chat_id"]
+                scylla_session,
+                chat_id=request.query_params["chat_id"],
+                paginator_params=paginator_params,
             )
             data = []
             for message_row in message_rows.all():
@@ -68,7 +73,7 @@ class MessagesAPI(HTTPEndpoint):
                     message_dict["created_at"]
                 ).timestamp()
                 data.append(message_dict)
-            return OrjsonResponse(data)
+            return OrjsonResponse({"data": data})
 
     async def post(self, request: Request):
         content_type = request.headers["content-type"]
@@ -80,15 +85,17 @@ class MessagesAPI(HTTPEndpoint):
             raise HTTPException(status_code=400)
         with scylladb.make_session("saksa") as scylla_session:
             result = await handle_send_message(scylla_session, form)
-        return OrjsonResponse(result, status_code=201)
+        return OrjsonResponse({"data": result}, status_code=201)
 
 
 class ChatListAPI(HTTPEndpoint):
     async def get(self, request: Request):
         query_str = request.query_params.get("s", "")
+        paginator_schema = CursorPaginatorQuery()
+        paginator_params = paginator_schema.load(request.query_params)
         with scylladb.make_session("saksa") as scylla_session:
             chatlist = await search_chatlist(
-                scylla_session, request.user.username, query_str
+                scylla_session, request.user.username, paginator_params, query_str
             )
             data = []
             for chat in chatlist:
@@ -112,7 +119,7 @@ class ChatListAPI(HTTPEndpoint):
                             "latest_message": chat["latest_message"],
                         }
                     )
-            return OrjsonResponse(data)
+            return OrjsonResponse({"data": data})
 
 
 class BasicAuthBackend(AuthenticationBackend):

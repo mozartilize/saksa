@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 import anyio
 from cassandra import ConsistencyLevel
+from cassandra.query import tuple_factory, named_tuple_factory
 from cassandra.cluster import ResultSet
 from cassandra.query import BatchStatement
 from cassandra.util import uuid_from_time
@@ -14,7 +15,7 @@ from .aio import async_
 def create_chat_members(scylladb, data):
     future = scylladb.execute_async(
         "INSERT INTO chat_members(chat_id, members) VALUES (%s, %s)",
-        (uuid.UUID(data["chat_id"]), set(data["members"]))
+        (uuid.UUID(data["chat_id"]), set(data["members"])),
     )
     return future
 
@@ -43,67 +44,17 @@ def create_message(scylladb, data):
             uuid.UUID(data["chat_id"]),
             data["sender"],
             data["message"],
-            uuid_from_time(
-                datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
-            )
-            if data.get("created_at")
-            else uuid_from_time(datetime.utcnow().replace(tzinfo=timezone.utc)),
+            data["created_at"],
         ),
     )
     return future
 
 
 @async_
-def get_users_latest_chat(scylladb, data):
+def get_messages_list(scylladb, chat_id, paginator_params):
     future = scylladb.execute_async(
-        "SELECT * FROM chats_by_user WHERE username = %s AND chat_id = %s LIMIT 1",
-        (
-            data["username"],
-            uuid.UUID(data["chat_id"]),
-        ),
-    )
-    return future
-
-
-@async_
-def create_users_latest_chat(scylladb, data):
-    future = scylladb.execute_async(
-        "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, name, latest_message) VALUES (%s, %s, %s, %s, %s)",
-        (
-            data["username"],
-            uuid_from_time(
-                datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
-            )
-            if data.get("created_at")
-            else uuid_from_time(datetime.utcnow().replace(tzinfo=timezone.utc)),
-            uuid.UUID(data["chat_id"]),
-            data["name"],
-            data["message"],
-        ),
-    )
-    return future
-
-
-@async_
-def delete_users_latest_chat(scylladb, data):
-    future = scylladb.execute_async(
-        "DELETE FROM chats_by_user WHERE chat_id=%s AND username=%s AND latest_message_sent_at < %s",
-        (
-            uuid.UUID(data["chat_id"]),
-            data["username"],
-            uuid_from_time(
-                datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
-            ),
-        ),
-    )
-    return future
-
-
-@async_
-def get_messages_list(scylladb, chat_id):
-    future = scylladb.execute_async(
-        "SELECT * FROM messages WHERE chat_id = %s ORDER BY created_at",
-        (uuid.UUID(chat_id),),
+        "SELECT * FROM messages WHERE chat_id = %s AND created_at < %s ORDER BY created_at LIMIT %s",
+        (uuid.UUID(chat_id), paginator_params["cursor"], paginator_params["size"]),
     )
     return future
 
@@ -121,6 +72,73 @@ def get_init_chat_name(username, members):
     return ", ".join(filter(lambda name: name != username, members))
 
 
+@async_
+def _get_users_chat(scylladb, data):
+    future = scylladb.execute_async(
+        "SELECT * FROM chats WHERE username = %s AND chat_id = %s",
+        (
+            data["username"],
+            uuid.UUID(data["chat_id"]),
+        ),
+    )
+    return future
+
+
+@async_
+def _create_chat(scylladb, data):
+    future = scylladb.execute_async(
+        "INSERT INTO chats(username, chat_id, name, latest_message_sent_at) VALUES (%s, %s, %s, %s)",
+        (
+            data["username"],
+            uuid.UUID(data["chat_id"]),
+            data["name"],
+            data["created_at"],
+        ),
+    )
+    return future
+
+
+@async_
+def _update_chat_latest_message_sent_at(scylladb, data):
+    future = scylladb.execute_async(
+        "UPDATE chats SET latest_message_sent_at = %s WHERE username = %s AND chat_id = %s",
+        (
+            data["created_at"],
+            data["username"],
+            uuid.UUID(data["chat_id"]),
+        ),
+    )
+    return future
+
+
+@async_
+def _create_users_latest_chat(scylladb, data):
+    future = scylladb.execute_async(
+        "INSERT INTO chats_by_user(username, latest_message_sent_at, chat_id, name, latest_message) VALUES (%s, %s, %s, %s, %s)",
+        (
+            data["username"],
+            data["created_at"],
+            uuid.UUID(data["chat_id"]),
+            data["name"],
+            data["message"],
+        ),
+    )
+    return future
+
+
+@async_
+def _delete_users_latest_chat(scylladb, data):
+    future = scylladb.execute_async(
+        "DELETE FROM chats_by_user WHERE username = %s AND latest_message_sent_at = %s AND chat_id = %s",
+        (
+            data["username"],
+            data["old_latest_message_sent_at"],
+            uuid.UUID(data["chat_id"]),
+        ),
+    )
+    return future
+
+
 async def handle_send_message(scylladb, data):
     # TODO: use batch query
     chat_id = data["chat_id"]
@@ -135,15 +153,26 @@ async def handle_send_message(scylladb, data):
         members_result: ResultSet = await get_chat_members(scylladb, chat_id)
         members = members_result.one()[0]
     async with anyio.create_task_group() as nursery:
+        if data.get("created_at"):
+            data["created_at"] = uuid_from_time(
+                datetime.fromtimestamp(data["created_at"]).replace(tzinfo=timezone.utc)
+            )
+        else:
+            data["created_at"] = uuid_from_time(datetime.utcnow().replace(tzinfo=timezone.utc))
         nursery.start_soon(create_message, scylladb, data)
         for member in members:
             data = {**data, "username": member}
             if initial:
                 data["name"] = get_init_chat_name(member, members)
+                data["old_latest_message_sent_at"] = None
+                nursery.start_soon(_create_chat, scylladb, data)
             else:
-                latest_users_chat_result = await get_users_latest_chat(scylladb, data)
-                latest_users_chat = latest_users_chat_result.one()
-                data["name"] = latest_users_chat.name
-            nursery.start_soon(delete_users_latest_chat, scylladb, data)
-            nursery.start_soon(create_users_latest_chat, scylladb, data)
+                users_chat_result = await _get_users_chat(scylladb, data)
+                users_chat = users_chat_result.one()
+                data["name"] = users_chat.name
+                data["old_latest_message_sent_at"] = users_chat.latest_message_sent_at
+            if data["old_latest_message_sent_at"]:
+                nursery.start_soon(_delete_users_latest_chat, scylladb, data)
+                nursery.start_soon(_update_chat_latest_message_sent_at, scylladb, data)
+            nursery.start_soon(_create_users_latest_chat, scylladb, data)
     return {"chat_id": chat_id}

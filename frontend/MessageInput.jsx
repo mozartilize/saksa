@@ -11,6 +11,7 @@ export default function MessageInput(props) {
   const inputMessage = useSelector((state) => state.inputMessage.value);
   const currentUser = useSelector((state) => state.currentUser.value);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
+  const searchQuery = useSelector((state) => state.searchChatQuery.value);
 
   async function handleSendMessage() {
     const msg = {
@@ -23,21 +24,23 @@ export default function MessageInput(props) {
     if (!selectingChat.chat_id) {
       msg.members = [currentUser, selectingChat.name];
     }
-    await sendMessage(msg).unwrap();
     dispatch(emptyInputMsg());
+    const sendMessageResp = await sendMessage(msg).unwrap();
     dispatch(
       chatListApi.util.updateQueryData(
         'fetchChatList',
-        {username: currentUser, searchQuery: ""},
+        {username: currentUser, searchQuery: searchQuery},
         (draft) => {
           const chatIndex = draft.map(chat => chat.chat_id).indexOf(msg.chat_id);
           const chat = draft.splice(chatIndex, 1)[0];
+          chat.chat_id = sendMessageResp.data.chat_id;
           chat.latest_message = msg.message;
           chat.latest_message_sent_at = msg.created_at;
           draft.unshift(chat);
         }
       )
     );
+    dispatch(chatListApi.util.invalidateTags(["ChatList"]));
     if (selectingChat.chat_id) {
       dispatch(pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`));
     }

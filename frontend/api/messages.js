@@ -10,6 +10,9 @@ export const messagesApi = createApi({
   endpoints: builder => ({
     fetchMessages: builder.query({
       query: (selectingChatId) => `/messages?chat_id=${selectingChatId}`,
+      transformResponse: responseData => {
+        return responseData.data;
+      },
     }),
     sendMessage: builder.mutation({
       query: (messageFormData) => ({
@@ -27,7 +30,7 @@ export const messagesApi = createApi({
           )
         }
         try {
-          const {data} = await queryFulfilled;
+          const {data: {data: data}} = await queryFulfilled;
           if (!selectingChatId) {
             const state = getState();
             const newChat = {

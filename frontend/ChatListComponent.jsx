@@ -4,7 +4,7 @@ import classNames from "classnames";
 import { useFetchChatListQuery } from "./api/chatlist";
 import { messagesApi } from "./api/messages";
 
-import { setChatNew } from "./features/chatlist";
+import { setChatNew, setSearchChatQuery } from "./features/chatlist";
 
 function ChatComponent(props) {
   const selectingChat = useSelector((state) => state.selectingChat.value);
@@ -40,8 +40,9 @@ function ChatComponent(props) {
 }
 
 export default function ChatListComponent(props) {
-  const [searchQuery, setSearchQuery] = useState("")
-  console.log(searchQuery);
+  const dispatch = useDispatch();
+
+  const searchQuery = useSelector((state) => state.searchChatQuery.value);
   const currentUser = useSelector((state) => state.currentUser.value);
 
   const { data, isLoading } = useFetchChatListQuery({username: currentUser, searchQuery});
@@ -49,7 +50,13 @@ export default function ChatListComponent(props) {
   return (
     <Fragment>
       <div id="search-chat">
-        <input type="text" onChange={(e)=>setSearchQuery(e.target.value)} name="search_chat" value={searchQuery} id="search-chat-input" />
+        <input
+          id="search-chat-input"
+          type="text"
+          name="search_chat"
+          value={searchQuery}
+          onChange={(e)=>dispatch(setSearchChatQuery(e.target.value))}
+        />
       </div>
       {isLoading ? (
         <Fragment></Fragment>

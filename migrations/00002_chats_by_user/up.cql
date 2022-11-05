@@ -10,9 +10,9 @@
 
 CREATE TABLE chats_by_user (
     username VARCHAR,
-    chat_id UUID,
     latest_message_sent_at TIMEUUID,
+    chat_id UUID,
     latest_message TEXT,
     name VARCHAR,
-    PRIMARY KEY (username, chat_id, latest_message_sent_at)
-);
+    PRIMARY KEY (username, latest_message_sent_at, chat_id)
+) WITH CLUSTERING ORDER BY (latest_message_sent_at DESC);

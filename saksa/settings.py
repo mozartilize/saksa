@@ -39,7 +39,11 @@ class Setting:
 
     @property
     def INDEX_TEMPLATE_DIR(self):
-        return self.TEMPLATE_DIR.joinpath("..") if self.IS_PROD else "http://localhost:3000"
+        return (
+            self.TEMPLATE_DIR.joinpath("..")
+            if self.IS_PROD
+            else "http://localhost:3000"
+        )
 
     @property
     def SCYLLADB_SERVER(self):

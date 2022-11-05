@@ -28,6 +28,7 @@ Jinja2 = "^3.1.2"
 anyio = "^3.6.1"
 faust-streaming = {extras = ["rocksdb"], version = "^0.8.5"}
 accept-types = "^0.4.1"
+marshmallow = "^3.18.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

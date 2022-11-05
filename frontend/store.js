@@ -5,6 +5,7 @@ import { currentUser } from "./features/auth";
 import {
   chatList,
   selectingChat,
+  searchChatQuery,
 } from "./features/chatlist";
 
 import { messagesApi } from "./api/messages";
@@ -19,6 +20,7 @@ export default configureStore({
     currentUser: currentUser.reducer,
     chatList: chatList.reducer,
     selectingChat: selectingChat.reducer,
+    searchChatQuery: searchChatQuery.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [messagesApi.reducerPath]: messagesApi.reducer,
     [chatListApi.reducerPath]: chatListApi.reducer,

@@ -1,1 +1,1 @@
-DROP TABLE chats_by_user IF NOT EXISTS;
+DROP TABLE IF EXISTS chats_by_user;

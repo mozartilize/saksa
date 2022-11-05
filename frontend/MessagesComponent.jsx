@@ -7,9 +7,13 @@ import { useFetchMessagesQuery } from "./api/messages";
 export default function MessagesComponent(props) {
   const selectingChat = useSelector((state) => state.selectingChat.value);
 
-  const { data, isLoading } = useFetchMessagesQuery(selectingChat ? selectingChat.chat_id : null, {
+  let { data, isLoading } = useFetchMessagesQuery(selectingChat ? selectingChat.chat_id : null, {
     skip: selectingChat === null || (selectingChat && !selectingChat.chat_id),
   });
+
+  if (selectingChat && !selectingChat.chat_id) {
+    data = [];
+  }
 
   useEffect(() => {
     if (

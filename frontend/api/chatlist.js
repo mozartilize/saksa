@@ -7,6 +7,10 @@ export const chatListApi = createApi({
   endpoints: builder => ({
     fetchChatList: builder.query({
       query: ({username, searchQuery}) => searchQuery!=="" ? `/chat?username=${username}&s=${searchQuery}`: `/chat?username=${username}`,
+      providesTags: ['ChatList'],
+      transformResponse: responseData => {
+        return responseData.data;
+      },
     }),
   })
 })

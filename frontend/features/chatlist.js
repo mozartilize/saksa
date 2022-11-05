@@ -27,5 +27,18 @@ export const selectingChat = createSlice({
   },
 })
 
+export const searchChatQuery = createSlice({
+  name: 'searchChatQuery',
+  initialState: {
+    value: "",
+  },
+  reducers: {
+    setSearchChatQuery: (state, action) => {
+      state.value = action.payload;
+    },
+  },
+})
+
 export const {setChatList, addChat} = chatList.actions;
 export const {setChatNew} = selectingChat.actions;
+export const {setSearchChatQuery} = searchChatQuery.actions;
