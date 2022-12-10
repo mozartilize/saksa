@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from cassandra.util import uuid_from_time
+from cassandra.util import min_uuid_from_time
 from marshmallow import fields, validate, post_load
 
 from .validator import BaseValidator
@@ -17,6 +17,6 @@ class CursorPaginatorQuery(BaseValidator):
     @post_load
     def make_paginator_params(self, data, **kwargs):
         return {
-            "cursor": uuid_from_time(datetime.fromtimestamp(data["cursor"])),
+            "cursor": min_uuid_from_time(datetime.fromtimestamp(data["cursor"])),
             "size": data["size"],
         }

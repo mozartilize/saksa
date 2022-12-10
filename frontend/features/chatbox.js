@@ -12,6 +12,9 @@ export const chatMessages = createSlice({
     pushMsg: (state, action) => {
       state.value.push(action.payload);
     },
+    prependMessages: (state, action) => {
+      state.value = [...action.payload, ...state.value]
+    },
   },
 })
 
@@ -46,6 +49,6 @@ export const inputMessage = createSlice({
   },
 })
 
-export const {setMessages, pushMsg} = chatMessages.actions;
+export const {setMessages, pushMsg, prependMessages} = chatMessages.actions;
 export const {setInputMsg, emptyInputMsg} = inputMessage.actions;
 export const {pushSentMsgIdentifier, removeSentMsgIdentifier} = sentMsgIdentifiers.actions;

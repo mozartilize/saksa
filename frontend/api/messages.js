@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { setChatNew } from '../features/chatlist';
+import { pushMsg } from '../features/chatbox';
 
 
 export const messagesApi = createApi({
@@ -9,7 +10,7 @@ export const messagesApi = createApi({
   tagTypes: ['Messages'],
   endpoints: builder => ({
     fetchMessages: builder.query({
-      query: (selectingChatId) => `/messages?chat_id=${selectingChatId}`,
+      query: ({selectingChatId, cursor}) => `/messages?chat_id=${selectingChatId}&cursor=${cursor}`,
       transformResponse: responseData => {
         return responseData.data;
       },
@@ -23,11 +24,7 @@ export const messagesApi = createApi({
       onQueryStarted: async (messageFormData, { dispatch, getState, queryFulfilled }) => {
         const selectingChatId = messageFormData["chat_id"];
         if (selectingChatId) {
-          const patchResult = dispatch(
-            messagesApi.util.updateQueryData('fetchMessages', selectingChatId, (draft) => {
-              draft.push(messageFormData);
-            })
-          )
+          dispatch(pushMsg(messageFormData));
         }
         try {
           const {data: {data: data}} = await queryFulfilled;
