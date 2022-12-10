@@ -53,7 +53,7 @@ def create_message(scylladb, data):
 @async_
 def get_messages_list(scylladb, chat_id, paginator_params):
     future = scylladb.execute_async(
-        "SELECT * FROM messages WHERE chat_id = %s AND created_at < %s ORDER BY created_at LIMIT %s",
+        "SELECT * FROM messages WHERE chat_id = %s AND created_at < %s LIMIT %s",
         (uuid.UUID(chat_id), paginator_params["cursor"], paginator_params["size"]),
     )
     return future

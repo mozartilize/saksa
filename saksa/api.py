@@ -73,7 +73,7 @@ class MessagesAPI(HTTPEndpoint):
                     message_dict["created_at"]
                 ).timestamp()
                 data.append(message_dict)
-            return OrjsonResponse({"data": data})
+            return OrjsonResponse({"data": data[::-1]})
 
     async def post(self, request: Request):
         content_type = request.headers["content-type"]

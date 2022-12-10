@@ -62,7 +62,7 @@ html, body {
 #messages {
   flex-grow: 1;
   width: 100%;
-  overflow-y: scroll;
+  overflow-y: hidden;
 }
 
 .message.isOut {

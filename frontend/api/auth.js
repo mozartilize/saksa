@@ -4,7 +4,7 @@ import { io } from "socket.io-client";
 import store from "../store";
 import { messagesApi } from "./messages";
 import { chatListApi } from "./chatlist";
-import { removeSentMsgIdentifier } from '../features/chatbox';
+import { pushMsg, removeSentMsgIdentifier } from '../features/chatbox';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
@@ -37,13 +37,9 @@ export const authApi = createApi({
             const message = JSON.parse(fileString);
             console.log(message);
             if (!state.sentMsgIdentifiers.value[`${message.chat_id}:${message.created_at}`]) {
-              dispatch(
-                messagesApi.util.updateQueryData('fetchMessages', state.selectingChat.value.chat_id, (draft) => {
-                  if (state.selectingChat.value.chat_id == message.chat_id) {
-                    draft.push(message);
-                  }
-                })
-              );
+              if (state.selectingChat.value.chat_id == message.chat_id) {
+                dispatch(pushMsg(message));
+              }
               dispatch(
                 chatListApi.util.updateQueryData(
                   'fetchChatList',
