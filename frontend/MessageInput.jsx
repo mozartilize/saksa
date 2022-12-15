@@ -1,7 +1,11 @@
 import { Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { setInputMsg, emptyInputMsg, pushSentMsgIdentifier } from "./features/chatbox";
+import {
+  setInputMsg,
+  emptyInputMsg,
+  pushSentMsgIdentifier,
+} from "./features/chatbox";
 import { useSendMessageMutation } from "./api/messages";
 import { chatListApi } from "./api/chatlist";
 
@@ -15,23 +19,25 @@ export default function MessageInput(props) {
 
   async function handleSendMessage() {
     const msg = {
-      chat_id: selectingChat.chat_id,
+      chat_id: selectingChat.search ? null : selectingChat.chat_id,
       created_at:
         new Date().getTime() / 1000 + new Date().getTimezoneOffset() * 60,
       message: inputMessage,
       sender: currentUser,
     };
-    if (!selectingChat.chat_id) {
+    if (selectingChat.search) {
       msg.members = [currentUser, selectingChat.name];
     }
     dispatch(emptyInputMsg());
     const sendMessageResp = await sendMessage(msg).unwrap();
     dispatch(
       chatListApi.util.updateQueryData(
-        'fetchChatList',
-        {username: currentUser, searchQuery: searchQuery},
+        "fetchChatList",
+        { username: currentUser, searchQuery: searchQuery },
         (draft) => {
-          const chatIndex = draft.map(chat => chat.chat_id).indexOf(msg.chat_id);
+          const chatIndex = draft
+            .map((chat) => chat.chat_id)
+            .indexOf(msg.chat_id);
           const chat = draft.splice(chatIndex, 1)[0];
           chat.chat_id = sendMessageResp.data.chat_id;
           chat.latest_message = msg.message;
@@ -41,8 +47,10 @@ export default function MessageInput(props) {
       )
     );
     dispatch(chatListApi.util.invalidateTags(["ChatList"]));
-    if (selectingChat.chat_id) {
-      dispatch(pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`));
+    if (!selectingChat.search) {
+      dispatch(
+        pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`)
+      );
     }
   }
 

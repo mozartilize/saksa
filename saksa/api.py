@@ -98,8 +98,9 @@ class ChatListAPI(HTTPEndpoint):
                 scylla_session, request.user.username, paginator_params, query_str
             )
             data = []
+            print(chatlist)
             for chat in chatlist:
-                if chat["chat_id"]:
+                if not chat["search"]:
                     data.append(
                         {
                             "name": chat["name"],
@@ -108,6 +109,7 @@ class ChatListAPI(HTTPEndpoint):
                                 chat["latest_message_sent_at"]
                             ).timestamp(),
                             "latest_message": chat["latest_message"],
+                            "search": chat["search"],
                         }
                     )
                 else:
@@ -117,6 +119,7 @@ class ChatListAPI(HTTPEndpoint):
                             "chat_id": chat["chat_id"],
                             "latest_message_sent_at": chat["latest_message_sent_at"],
                             "latest_message": chat["latest_message"],
+                            "search": chat["search"],
                         }
                     )
             return OrjsonResponse({"data": data})

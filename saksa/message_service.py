@@ -3,12 +3,12 @@ from datetime import datetime, timezone
 
 import anyio
 from cassandra import ConsistencyLevel
-from cassandra.query import tuple_factory, named_tuple_factory
 from cassandra.cluster import ResultSet
 from cassandra.query import BatchStatement
 from cassandra.util import uuid_from_time
 
 from .aio import async_
+from .chatlist_service import get_chat_members
 
 
 @async_
@@ -55,15 +55,6 @@ def get_messages_list(scylladb, chat_id, paginator_params):
     future = scylladb.execute_async(
         "SELECT * FROM messages WHERE chat_id = %s AND created_at < %s LIMIT %s",
         (uuid.UUID(chat_id), paginator_params["cursor"], paginator_params["size"]),
-    )
-    return future
-
-
-@async_
-def get_chat_members(scylladb, chat_id):
-    future = scylladb.execute_async(
-        "SELECT members FROM chat_members WHERE chat_id = %s",
-        (uuid.UUID(chat_id),),
     )
     return future
 
