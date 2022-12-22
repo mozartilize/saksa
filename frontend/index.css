@@ -22,6 +22,29 @@ html, body {
   overflow-y: scroll;
 }
 
+#chat-info > button {
+  display: none;
+}
+
+@media screen and (max-width: 800px) {
+  #app {
+    width: 100%;
+  }
+  #sidepane {
+    display: none;
+  }
+  #sidepane.shown {
+    display: block;
+    width: 100%;
+  }
+  #chatbox.minimized {
+    display: none;
+  }
+  #chat-info > button {
+    display: initial;
+  }
+}
+
 #search-chat {
   margin: 8px;
 }
@@ -57,6 +80,10 @@ html, body {
   flex-direction: column;
   align-content: stretch;
   padding: 4px;
+}
+
+#chat-info {
+  height: 64px;
 }
 
 #messages {

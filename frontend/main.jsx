@@ -7,6 +7,7 @@ import MessagesComponent from "./MessagesComponent";
 import MessageInput from "./MessageInput";
 import ChatListComponent from "./ChatListComponent";
 import UserComponent from "./UserComponent";
+import ChatInfoComponent from "./ChatInfoComponent";
 
 import "./index.css";
 
@@ -27,16 +28,23 @@ messegeInputNode.render(
   </Provider>
 );
 
-const chatListEl = ReactDOM.createRoot(document.getElementById("chatlist"));
-chatListEl.render(
+const chatListNode = ReactDOM.createRoot(document.getElementById("chatlist"));
+chatListNode.render(
   <Provider store={store}>
     <ChatListComponent />
   </Provider>
 );
 
-const userEl = ReactDOM.createRoot(document.getElementById("user"));
-userEl.render(
+const userNode = ReactDOM.createRoot(document.getElementById("user"));
+userNode.render(
   <Provider store={store}>
     <UserComponent />
+  </Provider>
+);
+
+const chatInfoNode = ReactDOM.createRoot(document.getElementById("chat-info"));
+chatInfoNode.render(
+  <Provider store={store}>
+    <ChatInfoComponent />
   </Provider>
 );

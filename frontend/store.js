@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import { chatMessages, inputMessage, sentMsgIdentifiers } from "./features/chatbox";
-import { currentUser } from "./features/auth";
 import {
-  chatList,
-  selectingChat,
-  searchChatQuery,
-} from "./features/chatlist";
-
+  chatMessages,
+  inputMessage,
+  sentMsgIdentifiers,
+  sidePaneState,
+} from "./features/chatbox";
+import { currentUser } from "./features/auth";
+import { chatList, selectingChat, searchChatQuery } from "./features/chatlist";
 
 import { messagesApi } from "./api/messages";
 import { chatListApi } from "./api/chatlist";
@@ -22,6 +22,7 @@ export default configureStore({
     chatList: chatList.reducer,
     selectingChat: selectingChat.reducer,
     searchChatQuery: searchChatQuery.reducer,
+    sidePaneState: sidePaneState.reducer,
     [authApi.reducerPath]: authApi.reducer,
     [messagesApi.reducerPath]: messagesApi.reducer,
     [chatListApi.reducerPath]: chatListApi.reducer,

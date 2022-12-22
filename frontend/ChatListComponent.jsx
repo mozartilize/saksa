@@ -1,10 +1,10 @@
-import { Fragment, useState } from "react";
+import { Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import classNames from "classnames";
 import { useFetchChatListQuery } from "./api/chatlist";
-import { messagesApi } from "./api/messages";
 
 import { setChatNew, setSearchChatQuery } from "./features/chatlist";
+import { setSidePaneState } from "./features/chatbox";
 
 function ChatComponent(props) {
   const selectingChat = useSelector((state) => state.selectingChat.value);
@@ -13,6 +13,7 @@ function ChatComponent(props) {
 
   function onSelectChat(e) {
     dispatch(setChatNew(props.chat));
+    dispatch(setSidePaneState(false));
   }
 
   return (
