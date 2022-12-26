@@ -30,7 +30,7 @@ class Setting:
         return env_var.lower() in ["true", 1, "enabled"]
 
     @property
-    def TEMPLATE_DIR(self):
+    def _BASE_TEMPLATE_DIR(self):
         return (
             self.BASE_DIR.joinpath("static/templates")
             if self.IS_PROD
@@ -38,9 +38,13 @@ class Setting:
         )
 
     @property
+    def TEMPLATE_DIR(self):
+        return "file://" + str(self._BASE_TEMPLATE_DIR)
+
+    @property
     def INDEX_TEMPLATE_DIR(self):
-        return (
-            self.TEMPLATE_DIR.joinpath("..")
+        return "file://" + str(
+            self._BASE_TEMPLATE_DIR.joinpath("..")
             if self.IS_PROD
             else "http://localhost:3000"
         )

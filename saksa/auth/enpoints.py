@@ -3,7 +3,7 @@ from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from starlette.templating import Jinja2Templates
+from saksa.libs.templates import Jinja2Templates
 
 from saksa.settings import settings
 from saksa.scylladb import scylladb

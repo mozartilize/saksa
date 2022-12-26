@@ -8,6 +8,7 @@ from .sio import create_sio
 
 logger = logging.getLogger(__name__)
 
+ASGIApp = socketio.ASGIApp
 
 if settings.ENV == "development":
     import httpx
