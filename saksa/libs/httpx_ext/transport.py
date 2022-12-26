@@ -3,6 +3,7 @@ from http import HTTPStatus
 from contextvars import ContextVar
 
 from httpx._transports.base import BaseTransport
+from httpx._transports.wsgi import WSGIByteStream
 from httpx import Request, Response
 
 
@@ -20,7 +21,7 @@ class FileUriTransport(BaseTransport):
         self.afp.set(fo)
         return Response(
             status_code=HTTPStatus.OK,
-            stream=fo,  # type: ignore
+            stream=WSGIByteStream(fo),
         )
 
     def close(self) -> None:

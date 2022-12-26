@@ -13,18 +13,3 @@ def async_(f):
         return result
 
     return wrapper
-
-
-import time
-from concurrent.futures import ThreadPoolExecutor
-
-
-@async_
-def foo():
-    def _foo():
-        time.sleep(1)
-        return 10
-
-    with ThreadPoolExecutor(max_workers=1) as exec:
-        fut = exec.submit(_foo)
-        return fut
