@@ -35,6 +35,10 @@ flake8 = "^3.9.2"
 httpx = "^0.23.0"
 black = "^22.6.0"
 
+[tool.poetry.group.dev.dependencies]
+pyright = "^1.1.285"
+isort = "^5.11.4"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
