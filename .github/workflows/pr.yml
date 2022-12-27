@@ -16,7 +16,7 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         cache: 'yarn'
-    - run: sudo apt install -y librocksdb-dev 
+    - run: sudo apt install -y librocksdb-dev libsnappy-dev liblz4-dev
     - run: poetry install
     - run: yarn install
     - run: make check
