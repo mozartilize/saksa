@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "private": true,
+  "name": "saksa",
+  "private": false,
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
@@ -22,6 +22,12 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^1.3.0",
+    "eslint": "^8.30.0",
+    "eslint-plugin-react": "^7.31.11",
     "vite": "^2.9.9"
-  }
+  },
+  "main": "frontend/main.jsx",
+  "repository": "git@github.com:mozartilize/saksa.git",
+  "author": "mozartilize <mozartilize@gmail.com>",
+  "license": "MIT"
 }

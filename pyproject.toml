@@ -29,15 +29,22 @@ anyio = "^3.6.1"
 faust-streaming = {extras = ["rocksdb"], version = "^0.8.5"}
 accept-types = "^0.4.1"
 marshmallow = "^3.18.0"
+httpx = "^0.23.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
-httpx = "^0.23.0"
 black = "^22.6.0"
+
+[tool.poetry.group.dev.dependencies]
+pyright = "^1.1.285"
+isort = "^5.11.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
 
 [tool.black]
 line-length = 88
