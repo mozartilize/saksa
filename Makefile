@@ -17,11 +17,7 @@ foo: .git
 	@echo ${PROJ}
 
 check:
-	[[ $(shell $(CHANGED_FILES) | grep -c .py) = 1 ]] && poetry run flake8 $(shell ${CHANGED_FILES} | grep .py) || exit 0
-	[[ $(shell $(CHANGED_FILES) | grep -c .py) = 1 ]] && poetry run pyright $(shell $(CHANGED_FILES) | grep .py) || exit 0
-	[[ $(shell $(CHANGED_FILES) | grep -c .py) = 1 ]] && poetry run isort -c $(shell $(CHANGED_FILES) | grep .py) || exit 0
-	[[ $(shell $(CHANGED_FILES) | grep -c .py) = 1 ]] && poetry run black --check $(shell $(CHANGED_FILES) | grep .py) || exit 0
-	[[ $(shell $(CHANGED_FILES) | grep -c -E .jsx?$) ]] && yarn run eslint $(shell $(CHANGED_FILES) | grep -E .jsx?$) || exit 0
+	pre-commit run --files $(shell $(CHANGED_FILES))
 
 test:
 	pytest tests

@@ -1,14 +1,31 @@
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited]
+  push:
+    branches:
+      - 'master'
+      - 'release/**'
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.before }}
+      if: ${{ github.event_name == 'push' }}
+    - uses: actions/checkout@v3
+    - name: Set env GIT_BASE_REF
+      run: |
+        if [[ $GITHUB_EVENT_NAME == 'push' ]]; then
+          echo "GIT_BASE_REF=${{ github.event.before }}" >> "$GITHUB_ENV"
+        else
+          echo "GIT_BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+        fi
     - name: Install poetry
       run: pipx install poetry
+    - name: Install pre-commit
+      run: pipx install pre-commit
     - uses: actions/setup-python@v4
       with:
         python-version: '3.10'
@@ -20,4 +37,6 @@ jobs:
     - run: poetry install
     - run: yarn install
     - run: git fetch origin ${{ github.base_ref }}
-    - run: make check GIT_BASE_REF='origin/${{ github.base_ref }}'
+      if: ${{ github.event_name == 'pull_request' }}
+    - run: echo $(git rev-parse --short HEAD)
+    - run: make check GIT_BASE_REF=$GIT_BASE_REF

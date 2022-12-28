@@ -1,0 +1,59 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pyupgrade
+        name: pyupgrade
+        language: node
+        types:
+          - "python"
+        entry: poetry run pyupgrade
+        args: ["--py37-plus"]
+  - repo: local
+    hooks:
+      - id: isort
+        name: Reorder Python imports (src, tests)
+        language: node
+        types:
+          - "python"
+        entry: poetry run isort
+  - repo: local
+    hooks:
+      - id: black
+        name: black
+        language: node
+        types:
+          - "python"
+        entry: poetry run black
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        language: node
+        types:
+          - "python"
+        entry: poetry run flake8
+
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        language: node
+        types:
+          - "python"
+        entry: poetry run pyright
+
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        language: node
+        files: '.jsx?$'
+        exclude: .eslintrc.js|vite.config.js
+        entry: yarn run eslint
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
