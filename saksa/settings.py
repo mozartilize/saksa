@@ -53,5 +53,13 @@ class Setting:
     def SCYLLADB_SERVER(self):
         return os.environ.get("SCYLLADB_SERVER") or "localhost"
 
+    @property
+    def SCYLLADB_AUTH(self):
+        username = os.environ.get("SCYLLADB_USERNAME")
+        pwd = os.environ.get("SCYLLADB_PASSWORD")
+        if username and pwd:
+            return (username, pwd)
+        return None
+
 
 settings = Setting("./.env")
