@@ -27,7 +27,7 @@ class Setting:
     @property
     def DEBUG(self):
         env_var = os.environ.get("SAKSA_DEBUG") or "0"
-        return env_var.lower() in ["true", 1, "enabled"]
+        return env_var.lower() in ["true", "1", "enabled"]
 
     @property
     def _BASE_TEMPLATE_DIR(self):
@@ -60,6 +60,14 @@ class Setting:
         if username and pwd:
             return (username, pwd)
         return None
+
+    @property
+    def DISABLE_SECURE_COOKIES(self):
+        return os.environ.get("SCYLLADB_PASSWORD", "").lower() in [
+            "true",
+            "1",
+            "enable",
+        ]
 
 
 settings = Setting("./.env")

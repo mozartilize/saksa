@@ -1,12 +1,11 @@
-from os import stat
 from confluent_kafka.admin import AdminClient, NewTopic
 from starlette.endpoints import HTTPEndpoint
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
-from saksa.libs.templates import Jinja2Templates
 
-from saksa.settings import settings
+from saksa.libs.templates import Jinja2Templates
 from saksa.scylladb import scylladb
+from saksa.settings import settings
 
 from .auth_service import create_user
 
@@ -39,5 +38,7 @@ class AuthHtml(HTTPEndpoint):
             for _, f in fs.items():
                 f.result()
         resp = RedirectResponse("/", status_code=301)
-        resp.set_cookie("username", username, secure=True)
+        resp.set_cookie(
+            "username", username, secure=not settings.DISABLE_SECURE_COOKIES
+        )
         return resp
