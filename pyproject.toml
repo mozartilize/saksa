@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "saksa"
-version = "0.2.0.dev26"
+version = "0.2.0.dev27"
 description = ""
 authors = ["mozartilize"]
 license = "MIT"
