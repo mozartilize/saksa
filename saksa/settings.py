@@ -63,7 +63,7 @@ class Setting:
 
     @property
     def DISABLE_SECURE_COOKIES(self):
-        return os.environ.get("SCYLLADB_PASSWORD", "").lower() in [
+        return os.environ.get("DISABLE_SECURE_COOKIES", "").lower() in [
             "true",
             "1",
             "enable",
