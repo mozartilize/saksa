@@ -15,7 +15,7 @@ app = faust.App(
 
 topic = app.topic("scylladb.saksa.messages")
 
-scylladb = ScyllaDB(settings.SCYLLADB_SERVER)
+scylladb = ScyllaDB(settings.SCYLLADB_SERVER, auth=settings.SCYLLADB_AUTH)
 
 
 async def _send_to_user_topic(topic, value):
