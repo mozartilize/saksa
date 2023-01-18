@@ -27,6 +27,12 @@ export default function MessagesComponent(props) {
 
   const items = useSelector((state) => state.chatMessages.value);
 
+  useEffect(() => {
+    setCursor(getInitialCursor());
+    setNeedScrollBottom(true);
+    wrapperEl.current = null;
+  }, [selectingChat]);
+
   const { data, status, error } = useSelector((state) =>
     messagesApi.endpoints.fetchMessages.select({
       selectingChatId: selectingChat ? selectingChat.chat_id : null,

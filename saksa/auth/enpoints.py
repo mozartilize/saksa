@@ -39,6 +39,9 @@ class AuthHtml(HTTPEndpoint):
                 f.result()
         resp = RedirectResponse("/", status_code=301)
         resp.set_cookie(
-            "username", username, secure=not settings.DISABLE_SECURE_COOKIES
+            "username",
+            username,
+            secure=not settings.DISABLE_SECURE_COOKIES,
+            samesite="lax",
         )
         return resp

@@ -43,8 +43,8 @@ class Setting:
 
     @property
     def INDEX_TEMPLATE_DIR(self):
-        return "file://" + str(
-            self._BASE_TEMPLATE_DIR.joinpath("..")
+        return (
+            "file://" + str(self._BASE_TEMPLATE_DIR.joinpath(".."))
             if self.IS_PROD
             else "http://localhost:3000"
         )

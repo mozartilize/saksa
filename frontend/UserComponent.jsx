@@ -6,7 +6,12 @@ export default function UserComponent(props) {
 
   const currentUser = useSelector((state) => state.currentUser.value);
 
+  function handleLogout() {
+    document.cookie = 'username' +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    location.href = "/";
+  }
+
   return (
-    <div>{currentUser} <button>Logout</button></div>
+    <div>{currentUser} <button onClick={handleLogout}>Logout</button></div>
   );
 }
