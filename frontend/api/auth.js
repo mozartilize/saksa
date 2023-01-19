@@ -37,7 +37,7 @@ export const authApi = createApi({
             const message = JSON.parse(fileString);
             console.log(message);
             if (!state.sentMsgIdentifiers.value[`${message.chat_id}:${message.created_at}`]) {
-              if (state.selectingChat.value.chat_id == message.chat_id) {
+              if (state.selectingChat.value && state.selectingChat.value.chat_id == message.chat_id) {
                 dispatch(pushMsg(message));
               }
               dispatch(
@@ -46,10 +46,14 @@ export const authApi = createApi({
                   {username: state.currentUser.value, searchQuery: ""},
                   (draft) => {
                     const chatIndex = draft.map(chat => chat.chat_id).indexOf(message.chat_id);
-                    const chat = draft.splice(chatIndex, 1)[0];
-                    chat.latest_message = message.message;
-                    chat.latest_message_sent_at = message.created_at;
-                    draft.unshift(chat);
+                    if (chatIndex < 0) {
+                      dispatch(chatListApi.util.invalidateTags(["ChatList"]));
+                    } else {
+                      const chat = draft.splice(chatIndex, 1)[0];
+                      chat.latest_message = message.message;
+                      chat.latest_message_sent_at = message.created_at;
+                      draft.unshift(chat);
+                    }
                   }
                 )
               );

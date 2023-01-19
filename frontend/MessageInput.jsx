@@ -4,7 +4,6 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   setInputMsg,
   emptyInputMsg,
-  pushSentMsgIdentifier,
 } from "./features/chatbox";
 import { useSendMessageMutation } from "./api/messages";
 import { chatListApi } from "./api/chatlist";
@@ -47,11 +46,6 @@ export default function MessageInput(props) {
       )
     );
     dispatch(chatListApi.util.invalidateTags(["ChatList"]));
-    if (!selectingChat.search) {
-      dispatch(
-        pushSentMsgIdentifier(`${selectingChat.chat_id}:${msg.created_at}`)
-      );
-    }
   }
 
   function onEnterPress(e) {

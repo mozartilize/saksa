@@ -1,8 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 import { setChatNew } from '../features/chatlist';
-import { pushMsg } from '../features/chatbox';
-
+import { pushMsg, pushSentMsgIdentifier } from '../features/chatbox';
 
 export const messagesApi = createApi({
   reducerPath: 'messagesApi',
@@ -38,7 +37,11 @@ export const messagesApi = createApi({
             }
             dispatch(setChatNew(newChat));
           }
-        } catch {
+          dispatch(
+            pushSentMsgIdentifier(`${data["chat_id"]}:${messageFormData["created_at"]}`)
+          );
+        } catch(err) {
+          console.debug(err);
           // patchResult.undo();
         }
       },
