@@ -1,28 +1,29 @@
 from accept_types import get_best_match
 from cassandra.util import datetime_from_uuid1
 from confluent_kafka.admin import AdminClient, NewTopic
+from starlette.applications import Starlette
 from starlette.authentication import (
     AuthCredentials,
     AuthenticationBackend,
     AuthenticationError,
     SimpleUser,
 )
-from starlette.applications import Starlette
 from starlette.endpoints import HTTPEndpoint
-from starlette.requests import HTTPConnection, Request
-from starlette.responses import RedirectResponse, Response
-from starlette.routing import Route, Mount
 from starlette.exceptions import HTTPException
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.requests import HTTPConnection, Request
+from starlette.responses import RedirectResponse, Response
+from starlette.routing import Mount, Route
 
-from saksa.libs.templates import Jinja2Templates
 from saksa.libs.paginator import CursorPaginatorQuery
+from saksa.libs.templates import Jinja2Templates
+
 from .auth.enpoints import AuthHtml
-from .message_service import get_messages_list, handle_send_message
 from .chatlist_service import search_chatlist
+from .message_service import get_messages_list, handle_send_message
 from .response import OrjsonResponse
-from .settings import settings
 from .scylladb import scylladb
+from .settings import settings
 
 
 class AuthVerificationAPI(HTTPEndpoint):
@@ -42,7 +43,7 @@ class UsersAPI(HTTPEndpoint):
             result = future.result().one()
         if result.applied:
             kafka_client = AdminClient(
-                {"bootstrap.servers": settings.kafka_bootstrap_servers}
+                {"bootstrap.servers": settings.KAFKA_BOOTSTRAP_SERVERS}
             )
             fs = kafka_client.create_topics(
                 [NewTopic(username, num_partitions=1, replication_factor=1)]

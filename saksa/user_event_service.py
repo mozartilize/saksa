@@ -16,7 +16,7 @@ def handle_consume_events_done(done_fut: asyncio.Future, result_fut: asyncio.Fut
 async def consume_user_events(sio, sid, topic):
     c = AIOConsumer(
         {
-            "bootstrap.servers": settings.kafka_bootstrap_servers,
+            "bootstrap.servers": settings.KAFKA_BOOTSTRAP_SERVERS,
             "group.id": f"saksa-{sid}",
             "auto.offset.reset": "largest",
         }

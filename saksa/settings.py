@@ -6,10 +6,14 @@ from dotenv import load_dotenv
 
 class Setting:
     def __init__(self, env_path) -> None:
+        default_env_path = "/etc/saksa/.env"
+        user_env_path = os.path.expanduser("~") + ".config/saksa/.env"
+        load_dotenv(default_env_path)
+        load_dotenv(user_env_path)
         load_dotenv(env_path)
 
     @property
-    def kafka_bootstrap_servers(self):
+    def KAFKA_BOOTSTRAP_SERVERS(self):
         return os.environ.get("KAFKA_BOOTSTRAP_SERVERS") or "localhost:9093"
 
     @property
@@ -23,11 +27,6 @@ class Setting:
     @property
     def BASE_DIR(self):
         return pathlib.Path(__file__).resolve().parent
-
-    @property
-    def DEBUG(self):
-        env_var = os.environ.get("SAKSA_DEBUG") or "0"
-        return env_var.lower() in ["true", "1", "enabled"]
 
     @property
     def _BASE_TEMPLATE_DIR(self):

@@ -30,7 +30,7 @@ class AuthHtml(HTTPEndpoint):
             result = fut.one()
         if result.applied:
             kafka_client = AdminClient(
-                {"bootstrap.servers": settings.kafka_bootstrap_servers}
+                {"bootstrap.servers": settings.KAFKA_BOOTSTRAP_SERVERS}
             )
             fs = kafka_client.create_topics(
                 [NewTopic(username, num_partitions=1, replication_factor=1)]

@@ -4,13 +4,12 @@ import anyio
 import faust
 from cassandra.util import datetime_from_uuid1
 
+from saksa.message_service import get_chat_members
 from saksa.scylladb import ScyllaDB
 from saksa.settings import settings
-from saksa.message_service import get_chat_members
-
 
 app = faust.App(
-    "saksa", broker=f"kafka://{settings.kafka_bootstrap_servers}", store="rocksdb://"
+    "saksa", broker=f"kafka://{settings.KAFKA_BOOTSTRAP_SERVERS}", store="rocksdb://"
 )
 
 topic = app.topic("scylladb.saksa.messages")
