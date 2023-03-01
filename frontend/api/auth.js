@@ -2,7 +2,6 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { io } from "socket.io-client";
 
 import store from "../store";
-import { messagesApi } from "./messages";
 import { chatListApi } from "./chatlist";
 import { pushMsg, removeSentMsgIdentifier } from '../features/chatbox';
 
@@ -27,7 +26,7 @@ export const authApi = createApi({
           // when data is received from the socket connection to the server,
           // if it is a message and for the appropriate channel,
           // update our query result with the received message
-          ws.on("connect", (arg) => {
+          ws.on("connect", () => {
             console.log("I'm connected");
           });
           ws.on("message", (bin_data) => {

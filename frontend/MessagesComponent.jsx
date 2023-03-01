@@ -1,4 +1,4 @@
-import {
+import React, {
   Fragment,
   useEffect,
   useState,
@@ -15,10 +15,11 @@ function getInitialCursor() {
   return new Date().getTime() / 1000 + new Date().getTimezoneOffset() * 60;
 }
 
-export default function MessagesComponent(props) {
+export default function MessagesComponent() {
   const dispatch = useDispatch();
   const wrapperEl = useRef(null);
   const selectingChat = useSelector((state) => state.selectingChat.value);
+  const [preChat, setPreChat] = useState(null);
   const [cursor, setCursor] = useState(getInitialCursor());
   const [clientHeight, setClientHeight] = useState(0);
   const [scrollHeight, setScrollHeight] = useState(0);
@@ -27,18 +28,22 @@ export default function MessagesComponent(props) {
 
   const items = useSelector((state) => state.chatMessages.value);
 
-  useEffect(() => {
-    setCursor(getInitialCursor());
-    setNeedScrollBottom(true);
-    wrapperEl.current = null;
-  }, [selectingChat]);
-
   const { data, status, error } = useSelector((state) =>
     messagesApi.endpoints.fetchMessages.select({
       selectingChatId: selectingChat ? selectingChat.chat_id : null,
       cursor,
     })(state)
   );
+
+  if (preChat !== selectingChat) {
+    setPreChat(selectingChat);
+    setCursor(getInitialCursor());
+  }
+
+  useEffect(() => {
+    setNeedScrollBottom(true);
+    wrapperEl.current = null;
+  }, [selectingChat]);
 
   useEffect(() => {
     if (selectingChat && selectingChat.chat_id) {
@@ -78,7 +83,7 @@ export default function MessagesComponent(props) {
     [clientHeight, scrollHeight, data, status, error]
   );
 
-  const handleScrollEvent = (e) => {
+  const handleScrollEvent = () => {
     const el = wrapperEl.current;
     if (data && data.length > 0 && wrapperEl.current.scrollTop === 0) {
       setCursor(data[0].created_at);

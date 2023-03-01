@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import React, { Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import {
@@ -8,7 +8,7 @@ import {
 import { useSendMessageMutation } from "./api/messages";
 import { chatListApi } from "./api/chatlist";
 
-export default function MessageInput(props) {
+export default function MessageInput() {
   const dispatch = useDispatch();
   const selectingChat = useSelector((state) => state.selectingChat.value);
   const inputMessage = useSelector((state) => state.inputMessage.value);
